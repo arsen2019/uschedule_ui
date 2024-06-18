@@ -10,15 +10,6 @@ class TanStackRouterDevtools extends Component {
 export const rootRoute = createRootRoute({
   component: () => (
     <>
-      <div className="p-2 flex gap-2">
-        <Link to="/" className="[&.active]:font-bold">
-          Home
-        </Link>{' '}
-        <Link to="/schedules" className="[&.active]:font-bold">
-          Schedules
-        </Link>
-      </div>
-      <hr />
       <Outlet />
       <TanStackRouterDevtools />
     </>
