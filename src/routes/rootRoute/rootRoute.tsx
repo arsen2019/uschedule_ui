@@ -8,10 +8,10 @@ class TanStackRouterDevtools extends Component {
 }
 
 export const rootRoute = createRootRoute({
-  component: () => (
-    <>
-      <Outlet />
-      <TanStackRouterDevtools />
-    </>
-  ),
+    component: () => (
+        <>
+            <Outlet/>
+            <TanStackRouterDevtools/>
+        </>
+    ),
 })

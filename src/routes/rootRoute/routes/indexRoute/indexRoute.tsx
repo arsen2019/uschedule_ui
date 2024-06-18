@@ -6,9 +6,9 @@ import {Flex, Select} from "antd";
 import Title from "antd/lib/typography/Title";
 
 export const indexRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/',
-  component: Index,
+    getParentRoute: () => rootRoute,
+    path: '/',
+    component: Index,
 })
 
 const containerStyle = {
@@ -33,21 +33,21 @@ function Index() {
     console.log(groups);
 
     return (
-      <Flex style={containerStyle} justify="center" align="center">
-          <div>
-                   <Title level={2}>Select a group</Title>
-          <Select
-              loading={isLoading}
-              placeholder="Group"
-              fieldNames={{
-                  label: 'name',
-                  value: 'uuid'
-              }}
-      style={{ width: 220 }}
-      options={groups}
-    />
-          </div>
+        <Flex style={containerStyle} justify="center" align="center">
+            <div>
+                <Title level={2}>Select a group</Title>
+                <Select
+                    loading={isLoading}
+                    placeholder="Group"
+                    fieldNames={{
+                        label: 'name',
+                        value: 'uuid'
+                    }}
+                    style={{width: 220}}
+                    options={groups}
+                />
+            </div>
 
-      </Flex>
+        </Flex>
     )
-  }
+}
