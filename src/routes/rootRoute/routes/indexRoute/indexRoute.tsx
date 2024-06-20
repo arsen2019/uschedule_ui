@@ -1,4 +1,4 @@
-import {createRoute} from "@tanstack/react-router";
+import {createRoute, useNavigate} from "@tanstack/react-router";
 import {rootRoute} from "../../rootRoute";
 import {QueryKey, useQuery} from "@tanstack/react-query";
 import {useState} from "react";
@@ -15,8 +15,13 @@ const containerStyle = {
     height: '100%'
 };
 
+interface Group {
+    name: string;
+    uuid: string;
+}
+
 function Index() {
-    const {data: groups, isLoading} = useQuery({
+    const {data: groups, isLoading} = useQuery<Group[]>({
         queryKey: ['groups'],
         queryFn: () => {
             return fetch('http://127.0.0.1:8000/groups')
@@ -30,15 +35,27 @@ function Index() {
         }
     });
 
+    const navigate = useNavigate();
+
     console.log(groups);
+
+    const onGroupSelect = (selectedGroupUuid: Group['uuid']) => {
+        navigate({
+            to: '/schedules/$scheduleUuid',
+            params: {
+                scheduleUuid: selectedGroupUuid
+            }
+        })
+    }
 
     return (
         <Flex style={containerStyle} justify="center" align="center">
             <div>
                 <Title level={2}>Select a group</Title>
-                <Select
+                <Select<Group['uuid']>
                     loading={isLoading}
                     placeholder="Group"
+                    onChange={onGroupSelect}
                     fieldNames={{
                         label: 'name',
                         value: 'uuid'
