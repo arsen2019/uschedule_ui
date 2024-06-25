@@ -1,9 +1,8 @@
 import {createRoute} from "@tanstack/react-router";
 import {rootRoute} from "../../rootRoute";
 import {useQuery} from "@tanstack/react-query";
-import {Flex, Select, Card, Collapse} from "antd";
-import Title from "antd/lib/typography/Title";
 import React, {useEffect, useState} from "react";
+import {DayCard, DAYS_OF_WEEK, TDayOfWeek, Course} from "./components/scheduleConsts";
 
 export const schedulesRoute = createRoute({
     getParentRoute: () => rootRoute,
@@ -16,6 +15,7 @@ const containerStyle = {
     width: '100%',
     margin: '10px',
 }
+
 const cardStyle = {
     width: '100%',
     maxWidth: '350px',
@@ -23,8 +23,6 @@ const cardStyle = {
 }
 
 
-const DAYS_OF_WEEK = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'] as const;
-type TDayOfWeek = typeof DAYS_OF_WEEK[number];
 
 function Schedules() {
     // TODO: find out why does not work without @ts-ignore
@@ -45,15 +43,14 @@ function Schedules() {
         }
     });
 
-    // TODO: replace any with schedule type
-    const [coursesByDay, setCoursesByDay] = useState<Record<TDayOfWeek, any>>();
+    const [coursesByDay, setCoursesByDay] = useState<Record<TDayOfWeek, Course[]>>();
 
     useEffect(() => {
         if (schedule) {
             setCoursesByDay(DAYS_OF_WEEK.reduce((output, dayOfWeek) => {
-                output[dayOfWeek] = schedule.filter((course: any) => course.day_of_week === dayOfWeek);
+                output[dayOfWeek] = schedule.filter((course: Course) => course.day_of_week === dayOfWeek);
                 return output;
-            }, {} as Partial<Record<TDayOfWeek, any>>) as Record<TDayOfWeek, any>)
+            }, {} as Partial<Record<TDayOfWeek, Course[]>>) as Record<TDayOfWeek, Course[]>)
         }
 
     }, [schedule]);
@@ -63,23 +60,7 @@ function Schedules() {
         <div className="container" style={containerStyle}>
 
             {coursesByDay && DAYS_OF_WEEK.map(day => (
-                <div className="day-card" key={day}>
-
-                    <Card style={cardStyle} title={day} bordered={true}>
-                        <Collapse accordion>
-                            {coursesByDay[day].map((course: any) => (
-                                <Collapse.Panel header={`${course.name} ${course.start_time} : ${course.end_time}`} key={course.uuid}>
-                                    <p>Teacher: {course.teacher.first_name} {course.teacher.last_name}</p>
-                                    <p>Building: {course.building.name}</p>
-                                    <p>Room: {course.room.name}</p>
-
-                                </Collapse.Panel>
-                            ))}
-                        </Collapse>
-                    </Card>
-
-
-                </div>
+                <DayCard key={day} day={day} courses={coursesByDay[day]} cardStyle={cardStyle}/>
             ))}
         </div>
     );

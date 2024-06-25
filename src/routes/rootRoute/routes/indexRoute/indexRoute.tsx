@@ -4,6 +4,7 @@ import {QueryKey, useQuery} from "@tanstack/react-query";
 import {useState} from "react";
 import {Flex, Select} from "antd";
 import Title from "antd/lib/typography/Title";
+import {components} from "../../../../types/api"
 
 export const indexRoute = createRoute({
     getParentRoute: () => rootRoute,
@@ -14,11 +15,7 @@ export const indexRoute = createRoute({
 const containerStyle = {
     height: '100%'
 };
-
-interface Group {
-    name: string;
-    uuid: string;
-}
+type Group = components["schemas"]["Group"]
 
 function Index() {
     const {data: groups, isLoading} = useQuery<Group[]>({
