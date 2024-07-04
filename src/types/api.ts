@@ -49,6 +49,11 @@ export interface components {
         };
         /** Course */
         Course: {
+            /**
+             * Uuid
+             * Format: uuid
+             */
+            uuid: string;
             /** Name */
             name: string;
             /** Day Of Week */
