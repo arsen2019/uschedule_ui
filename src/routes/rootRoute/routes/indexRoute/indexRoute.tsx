@@ -5,7 +5,7 @@ import {useState} from "react";
 import {Flex, Select} from "antd";
 import Title from "antd/lib/typography/Title";
 import {components} from "../../../../types/api"
-
+import  GroupSelect from "../core/groupSelect"
 export const indexRoute = createRoute({
     getParentRoute: () => rootRoute,
     path: '/',
@@ -15,7 +15,7 @@ export const indexRoute = createRoute({
 const containerStyle = {
     height: '100%'
 };
-type Group = components["schemas"]["Group"]
+export type Group = components["schemas"]["Group"]
 
 function Index() {
     const {data: groups, isLoading} = useQuery<Group[]>({
@@ -32,34 +32,11 @@ function Index() {
         }
     });
 
-    const navigate = useNavigate();
-
-    console.log(groups);
-
-    const onGroupSelect = (selectedGroupUuid: Group['uuid']) => {
-        navigate({
-            to: '/schedules/$scheduleUuid',
-            params: {
-                scheduleUuid: selectedGroupUuid
-            }
-        })
-    }
-
     return (
         <Flex style={containerStyle} justify="center" align="center">
             <div>
                 <Title level={2}>Select a group</Title>
-                <Select<Group['uuid']>
-                    loading={isLoading}
-                    placeholder="Group"
-                    onChange={onGroupSelect}
-                    fieldNames={{
-                        label: 'name',
-                        value: 'uuid'
-                    }}
-                    style={{width: 220}}
-                    options={groups}
-                />
+                <GroupSelect groups={groups || []} isLoading={isLoading} selectedGroup={null}></GroupSelect>
             </div>
 
         </Flex>

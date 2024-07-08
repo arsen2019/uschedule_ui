@@ -2,16 +2,30 @@ import React from "react";
 import {Card, Collapse, Col, Button, CollapseProps} from "antd";
 import {components} from "../../../../../types/api"
 
+const cardStyle = {
+    width: '100%',
+    maxWidth: '350px',
+    marginBottom: '15px',
+
+}
+const headerStyle = {
+    display:'flex',
+    justifyContent:'space-between'
+}
 
 export const DAYS_OF_WEEK = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'] as const;
 export type TDayOfWeek = typeof DAYS_OF_WEEK[number];
 export type TCourse = components["schemas"]["Course"]
 
 
-export const DayCard = ({day, courses, cardStyle}: { day: TDayOfWeek, courses: TCourse[], cardStyle: any }) => {
+export const DayCard = ({day, courses}: { day: TDayOfWeek, courses: TCourse[] }) => {
     const items: CollapseProps['items'] = courses.map((course) => {
         return {
-            label: `${course.name} ${course.start_time} - ${course.end_time} `,
+            label: (<div style={headerStyle}>
+                        <span>{course.name}</span>
+                        <span>{course.start_time} - {course.end_time}</span>
+                    </div>),
+
             key: course.uuid,
             children: (
                 <>
