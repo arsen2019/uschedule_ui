@@ -35,7 +35,7 @@ function Index() {
     return (
         <Flex style={containerStyle} justify="center" align="center">
             <div>
-                <Title level={2}>Select a group</Title>
+                <Title level={2} style={{textAlign:"center"}}>Select a group</Title>
                 <GroupSelect groups={groups || []} isLoading={isLoading} selectedGroup={null}></GroupSelect>
             </div>
 

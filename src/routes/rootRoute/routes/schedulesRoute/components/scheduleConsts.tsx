@@ -19,6 +19,7 @@ export type TCourse = components["schemas"]["Course"]
 
 
 export const DayCard = ({day, courses}: { day: TDayOfWeek, courses: TCourse[] }) => {
+
     const items: CollapseProps['items'] = courses.map((course) => {
         return {
             label: (<div style={headerStyle}>
@@ -41,7 +42,11 @@ export const DayCard = ({day, courses}: { day: TDayOfWeek, courses: TCourse[] })
         <div>
             <Col>
                 <Card style={cardStyle} title={day} bordered={true}>
-                    <Collapse accordion items={items}/>
+                     {courses.length > 0 ? (
+                        <Collapse accordion items={items} />
+                    ) : (
+                        <p style={{margin:0, textAlign: "center"}}>No Courses</p>
+                    )}
                 </Card>
             </Col>
         </div>
