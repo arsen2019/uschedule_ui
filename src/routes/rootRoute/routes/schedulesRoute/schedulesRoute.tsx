@@ -49,7 +49,7 @@ function Schedules() {
     const {data: schedule, isLoading, refetch} = useQuery({
         queryKey: ['schedules', weekStartDate, scheduleUuid],
         queryFn: () => {
-            return fetch(`http://127.0.0.1:8000/schedules/${scheduleUuid}?current_week=${weekStartDate.toISOString()}`)
+            return fetch(`http://104.248.138.102:8000/schedules/${scheduleUuid}?current_week=${weekStartDate.toISOString()}`)
                 .then((res) => {
                     if (res.ok) {
                         return res.json();

@@ -1,0 +1,9 @@
+.idea
+.venv
+.gitignore
+venv
+node_modules
+.docker
+.dockerignore
+**/__pycache__/
+**/*.py[cod]

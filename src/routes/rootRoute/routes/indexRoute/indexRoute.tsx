@@ -21,7 +21,7 @@ function Index() {
     const {data: groups, isLoading} = useQuery<Group[]>({
         queryKey: ['groups'],
         queryFn: () => {
-            return fetch('http://127.0.0.1:8000/groups')
+            return fetch('http://104.248.138.102:8000/groups')
                 .then((res) => {
                     if (res.ok) {
                         return res.json();
