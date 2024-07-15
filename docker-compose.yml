@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  frontend:
+    build:
+      dockerfile: Dockerfile
+    container_name: uschedule-frontend
+    ports:
+      - "3000:3000"
+    networks:
+      - uschedule-net
+
+networks:
+  uschedule-net:
+    driver: bridge
+volumes:
+  postgres-data:
