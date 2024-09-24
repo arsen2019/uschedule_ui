@@ -9,8 +9,18 @@ services:
       - "3000:3000"
     networks:
       - uschedule-net
+      - traefik
+    
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.frontend.rule=Host(`schedule.arsgreg.com`)"
+      - "traefik.http.routers.frontend.entrypoints=websecure"
+      - "traefik.http.routers.frontend.tls=true"
+      - "traefik.http.routers.frontend.tls.certresolver=myresolver"
 
 networks:
+  traefik:
+    external: true
   uschedule-net:
     driver: bridge
 volumes:
