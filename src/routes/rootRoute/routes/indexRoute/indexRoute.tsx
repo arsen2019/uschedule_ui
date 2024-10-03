@@ -9,6 +9,7 @@ import {Footer} from "../core/footer";
 import {LanguageSwitcher} from "../core/languages";
 import {TLanguage, pageContent} from "../core/pageContent";
 import LabSelect from "../core/labSelect";
+import {useGetGroups} from "../core/hooks/useGetGroups";
 
 export const indexRoute = createRoute({
     getParentRoute: () => rootRoute,
@@ -42,23 +43,7 @@ function Index() {
     document.title = `${pageContent.Schedule[language]}`
 
 
-    const {data: groups, isLoading} = useQuery<Group[]>({
-        queryKey: ['groups', language],
-        queryFn: () => {
-            return fetch('https://api.schedule.arsgreg.com/groups/',{
-                 headers: {
-                    'Accept-Language': language
-                },
-            })
-                .then((res) => {
-                    if (res.ok) {
-                        return res.json();
-                    }
-                    return [];
-                })
-
-        }
-    });
+   const {groups, isLoading} = useGetGroups({language})
 
     const {data: labs, isFetching} = useQuery<Lab[]>({
         queryKey: ['labs', language],

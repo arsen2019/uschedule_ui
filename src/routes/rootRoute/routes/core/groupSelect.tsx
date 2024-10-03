@@ -7,13 +7,12 @@ type GroupSelectProps = {
     groups: Group[]
     isLoading: boolean
     language : TLanguage
-    selectedGroup: Group | null
+    selectedGroup: Group | undefined | null
     onGroupChange?: (selectedGroupUuid: Group["uuid"]) => void
     selectedLabUuid: string | null
 }
 
 function GroupSelect({groups, isLoading, language, selectedGroup, onGroupChange, selectedLabUuid}: GroupSelectProps) {
-    localStorage.setItem('groups', JSON.stringify(groups));
     const navigate = useNavigate()
     const defaultGroupChange = (selectedGroupUuid:Group["uuid"]) => {
         localStorage.setItem('selectedGroupUuid',selectedGroupUuid);

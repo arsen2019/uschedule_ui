@@ -11,6 +11,7 @@ import {LanguageSwitcher} from "../core/languages";
 import {pageContent, TLanguage} from "../core/pageContent";
 import {Group, Lab} from "../indexRoute/indexRoute";
 import LabSelect from "../core/labSelect";
+import {useGetGroups} from "../core/hooks/useGetGroups";
 
 export const schedulesRoute = createRoute({
     getParentRoute: () => rootRoute,
@@ -50,8 +51,9 @@ function Schedules() {
     const location = useLocation()
     const scheduleUuid = params["scheduleUuid?$lab_uuid"];
     const selectedLabUuid = location.search.lab_uuid ? new URLSearchParams(location.search).get("lab_uuid") : null;
+    const [language, setLanguage] = useState<TLanguage>('hy');
 
-    const groups = JSON.parse(localStorage.getItem('groups') || '[]');
+    const {groups} = useGetGroups({language})
     const labs = JSON.parse(localStorage.getItem('labs') || '[]');
 
     const selectedLab = labs ? labs.find((lab: Lab) => lab.uuid === selectedLabUuid) : null;
@@ -60,7 +62,6 @@ function Schedules() {
     const isInitialRender = useRef(true)
     const [weekStartDate, setWeekStartDate] = useState(new Date());
     const [weekIndex, setWeekIndex] = useState(0);
-    const [language, setLanguage] = useState<TLanguage>('hy');
     const dayRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
     const [highlightedDay, setHighlightedDay] = useState<TDayOfWeek | null>(null);
 
@@ -137,61 +138,62 @@ function Schedules() {
 
     return (
 
-            <div className="container" style={{...containerStyle, flexDirection: "column"}}>
-                <div className="nav"
-                     style={{'display': 'flex', 'justifyContent': 'space-between', 'padding': '20px 0'}}>
-                    <div style={{flex:'4 1 0%'}}>
-                        <GroupSelect groups={groups} isLoading={isLoading} language={language} selectedGroup={selectedGroup} selectedLabUuid={selectedLabUuid}></GroupSelect>
-                    </div>
-                    <div style={{flex:'4 1 0%'}}>
-                        <LabSelect labs={labs} isLoading={isLoading} language={language} selectedLab={selectedLab}
-                                   selectedGroupUuid={scheduleUuid}></LabSelect>
-                    </div>
-                    <div>
-                        <LanguageSwitcher selectedLanguage={language} setLanguage={setLanguage}/>
-                    </div>
-
-
+        <div className="container" style={{...containerStyle, flexDirection: "column"}}>
+            <div className="nav"
+                 style={{'display': 'flex', 'justifyContent': 'space-between', 'padding': '20px 0'}}>
+                <div style={{flex: '4 1 0%'}}>
+                    <GroupSelect groups={groups} isLoading={isLoading} language={language} selectedGroup={selectedGroup}
+                                 selectedLabUuid={selectedLabUuid}></GroupSelect>
+                </div>
+                <div style={{flex: '4 1 0%'}}>
+                    <LabSelect labs={labs} isLoading={isLoading} language={language} selectedLab={selectedLab}
+                               selectedGroupUuid={scheduleUuid}></LabSelect>
+                </div>
+                <div>
+                    <LanguageSwitcher selectedLanguage={language} setLanguage={setLanguage}/>
                 </div>
 
-                <div style={weekStyle}>
 
-
-                    <Button disabled={weekIndex == 0} onClick={handlePreviousWeek}
-                            shape='circle' icon={<LeftOutlined/>}></Button>
-
-                    <div style={{display: 'flex', alignItems: 'center'}}>
-                        <span>{weekIndex ? pageContent['Next Week'][language] : pageContent['Current Week'][language]}</span>
-                        <img alt={""} style={{paddingLeft: '15px'}}
-                             src={`/icons/${weekIndex ? 'hamarich.png' : 'haytarar.png'}`}/>
-                    </div>
-
-                    <Button disabled={weekIndex > 0} onClick={handleNextWeek} shape='circle'
-                            icon={<RightOutlined/>}></Button>
-
-
-                </div>
-                <div className='card-container' style={{
-                    overflow: 'auto',
-                    boxShadow: 'rgba(99, 99, 99, 0.2) 0px 2px 8px 0px',
-                    borderRadius: '2%',
-                    flexGrow:1,
-                    minHeight: 0,
-
-                }}>
-                    {coursesByDay && DAYS_OF_WEEK.map(day => (
-                        <div
-                            key={day}
-                            ref={(el) => dayRefs.current[day] = el}
-                            className={getCardClassName(day)}
-                        >
-                            <DayCard key={day} day={day} courses={coursesByDay[day]} language={language}/>
-                        </div>
-                    ))}
-
-                </div>
-                <Footer/>
             </div>
+
+            <div style={weekStyle}>
+
+
+                <Button disabled={weekIndex == 0} onClick={handlePreviousWeek}
+                        shape='circle' icon={<LeftOutlined/>}></Button>
+
+                <div style={{display: 'flex', alignItems: 'center'}}>
+                    <span>{weekIndex ? pageContent['Next Week'][language] : pageContent['Current Week'][language]}</span>
+                    <img alt={""} style={{paddingLeft: '15px'}}
+                         src={`/icons/${weekIndex ? 'hamarich.png' : 'haytarar.png'}`}/>
+                </div>
+
+                <Button disabled={weekIndex > 0} onClick={handleNextWeek} shape='circle'
+                        icon={<RightOutlined/>}></Button>
+
+
+            </div>
+            <div className='card-container' style={{
+                overflow: 'auto',
+                boxShadow: 'rgba(99, 99, 99, 0.2) 0px 2px 8px 0px',
+                borderRadius: '2%',
+                flexGrow: 1,
+                minHeight: 0,
+
+            }}>
+                {coursesByDay && DAYS_OF_WEEK.map(day => (
+                    <div
+                        key={day}
+                        ref={(el) => dayRefs.current[day] = el}
+                        className={getCardClassName(day)}
+                    >
+                        <DayCard key={day} day={day} courses={coursesByDay[day]} language={language}/>
+                    </div>
+                ))}
+
+            </div>
+            <Footer/>
+        </div>
 
 
     );
