@@ -1,12 +1,14 @@
 import {LinkedinOutlined} from '@ant-design/icons'
 import React from "react";
 
+const PADDING_VERTICAL = "10px"
+
 const footerStyle = {
-    width: 'inherit',
-    padding: '15px 0',
+    paddingBottom: `max(env(safe-area-inset-bottom, 5px), ${PADDING_VERTICAL})`,
+    paddingTop: PADDING_VERTICAL,
     display: 'flex',
     justifyContent: "center",
-    alignItems: 'center'
+    alignItems: 'center',
 }
 export const Footer: React.FC = () => {
     return (

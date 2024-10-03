@@ -1,13 +1,14 @@
 import {createRoute, useNavigate} from "@tanstack/react-router";
 import {rootRoute} from "../../rootRoute";
-import {QueryKey, useQuery} from "@tanstack/react-query";
-import React, {useState} from "react";
+import {useQuery} from "@tanstack/react-query";
+import React, {useEffect, useState} from "react";
 import Title from "antd/lib/typography/Title";
 import {components} from "../../../../types/api"
 import GroupSelect from "../core/groupSelect"
 import {Footer} from "../core/footer";
 import {LanguageSwitcher} from "../core/languages";
 import {TLanguage, pageContent} from "../core/pageContent";
+import LabSelect from "../core/labSelect";
 
 export const indexRoute = createRoute({
     getParentRoute: () => rootRoute,
@@ -15,24 +16,32 @@ export const indexRoute = createRoute({
     component: Index,
 })
 
-const containerStyle:React.CSSProperties = {
+const containerStyle: React.CSSProperties = {
     height: '100%',
-    display:'flex',
-    flexDirection:'column',
+    display: 'flex',
+    flexDirection: 'column',
 };
-const contentStyle:React.CSSProperties = {
-    display:'flex',
-    flexDirection:'column',
-    justifyContent:'center',
-    alignItems:'center',
-    flexGrow:1
+const contentStyle: React.CSSProperties = {
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'center',
+    alignItems: 'center',
+    flexGrow: 1
 };
 
 export type Group = components["schemas"]["Group"]
+export type Lab = components["schemas"]["Lab"]
 
 function Index() {
     const [language, setLanguage] = useState<TLanguage>('hy')
+    //const [selectedGroupUuid, setSelectedGroupUuid] = useState<string>("")
+    const [selectedLabUuid] = useState<string | null>(localStorage.getItem('selectedLabUuid') || null)
+    const [selectedGroupUuid, setSelectedGroupUuid] = useState<string | null>(localStorage.getItem('selectedGroupUuid') || null)
+    const [showLabSelect, setShowLabSelect] = useState(false)
+    const navigate = useNavigate();
     document.title = `${pageContent.Schedule[language]}`
+
+
     const {data: groups, isLoading} = useQuery<Group[]>({
         queryKey: ['groups', language],
         queryFn: () => {
@@ -51,21 +60,82 @@ function Index() {
         }
     });
 
+    const {data: labs, isFetching} = useQuery<Lab[]>({
+        queryKey: ['labs', language],
+        queryFn: () => {
+            return fetch('https://api.schedule.arsgreg.com/groups/labs', {
+                headers: {
+                    'Accept-Language': language
+                },
+            })
+                .then((res) => {
+                    if (res.ok) {
+                        return res.json();
+                    }
+                    return [];
+                })
+
+        }
+    });
+
+    useEffect(() => {
+
+        console.log("Lab:", selectedLabUuid)
+        console.log("Group:", selectedGroupUuid)
+        if (selectedGroupUuid && selectedLabUuid) {
+
+            localStorage.setItem('selectedGroupUuid', selectedGroupUuid);
+            localStorage.setItem('selectedLabUuid', selectedLabUuid);
+            localStorage.setItem('selectedLanguage', language);
+
+            navigate({
+            to: `/schedules/$scheduleUuid`,
+            params:{
+                scheduleUuid:selectedGroupUuid,
+            },
+            search: {
+                lab_uuid: selectedLabUuid,
+            },
+        });
+        }
+    }, [selectedLabUuid, selectedGroupUuid, navigate, language]);
+
+    const handleGroupSelect = (selectedGroupUuid: Group["uuid"]) => {
+        localStorage.setItem("selectedGroupUuid", selectedGroupUuid)
+        setSelectedGroupUuid(selectedGroupUuid)
+        setShowLabSelect(true)
+    }
+
     return (
 
-            <div className='container' style={containerStyle} >
-                <div className="nav" style={{'display': 'flex', 'justifyContent': 'flex-end', 'padding': '20px 0'}}>
-                    <LanguageSwitcher selectedLanguage={language} setLanguage={setLanguage}/>
-                </div>
-
-                <div className='content' style={contentStyle} >
-                    <Title level={2} style={{textAlign: "center"}}>{pageContent['Select a Group'][language]}</Title>
-                    <GroupSelect groups={groups || []} isLoading={isLoading} language={language}
-                                 selectedGroup={null}></GroupSelect>
-                </div>
-                <Footer/>
+        <div className='container' style={containerStyle}>
+            <div className="nav" style={{'display': 'flex', 'justifyContent': 'flex-end', 'padding': '20px 0'}}>
+                <LanguageSwitcher selectedLanguage={language} setLanguage={setLanguage}/>
             </div>
 
+            <div className='content' style={contentStyle}>
+                <Title level={2} style={{textAlign: "center"}}>{pageContent['Select a Group'][language]}</Title>
+                <div style={{width: 220}}>
+                    <GroupSelect groups={groups || []} isLoading={isLoading} language={language}
+                                 selectedGroup={null} onGroupChange={handleGroupSelect}
+                                 selectedLabUuid={null}></GroupSelect>
+                </div>
+
+                {
+                    showLabSelect &&
+                    <div style={{
+                        width: 220,
+                        margin: showLabSelect ? "30px 0 0 0" : "0",
+                        transition: 'all 2s ease',
+                    }}>
+                        <LabSelect labs={labs || []} isLoading={isFetching} language={language} selectedLab={null}
+                                   selectedGroupUuid={selectedGroupUuid}
+                        ></LabSelect>
+                    </div>
+                }
+            </div>
+            <Footer/>
+        </div>
 
 
     )

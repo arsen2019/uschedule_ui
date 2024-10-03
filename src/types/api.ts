@@ -28,8 +28,25 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Get Courses */
-        get: operations["get_courses_groups__get"];
+        /** Get Groups */
+        get: operations["get_groups_groups__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/groups/labs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Labs */
+        get: operations["get_labs_groups_labs_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -49,15 +66,13 @@ export interface components {
         };
         /** Course */
         Course: {
-            /**
-             * Uuid
-             * Format: uuid
-             */
             uuid: string;
             /** Name */
             name: string;
             /** Day Of Week */
             day_of_week: string;
+            /** Type */
+            type: string;
             /** Start Time */
             start_time: string;
             /** End Time */
@@ -80,6 +95,16 @@ export interface components {
         HTTPValidationError: {
             /** Detail */
             detail?: components["schemas"]["ValidationError"][];
+        };
+        /** Lab */
+        Lab: {
+            /** Name */
+            name: string;
+            /**
+             * Uuid
+             * Format: uuid
+             */
+            uuid: string;
         };
         /** Room */
         Room: {
@@ -114,6 +139,7 @@ export interface operations {
     get_courses_schedules__group_uuid__get: {
         parameters: {
             query?: {
+                lab_uuid?: string | null;
                 current_week?: string;
             };
             header?: never;
@@ -144,7 +170,7 @@ export interface operations {
             };
         };
     };
-    get_courses_groups__get: {
+    get_groups_groups__get: {
         parameters: {
             query?: never;
             header?: never;
@@ -160,6 +186,26 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Group"][];
+                };
+            };
+        };
+    };
+    get_labs_groups_labs_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Lab"][];
                 };
             };
         };

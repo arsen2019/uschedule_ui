@@ -9,15 +9,17 @@ import GroupSelect from "../core/groupSelect";
 import {Footer} from "../core/footer";
 import {LanguageSwitcher} from "../core/languages";
 import {pageContent, TLanguage} from "../core/pageContent";
-import {Group} from "../indexRoute/indexRoute";
+import {Group, Lab} from "../indexRoute/indexRoute";
+import LabSelect from "../core/labSelect";
 
 export const schedulesRoute = createRoute({
     getParentRoute: () => rootRoute,
-    path: '/schedules/$scheduleUuid',
+    path: '/schedules/$scheduleUuid?$lab_uuid',
     component: Schedules
 })
 
 const containerStyle = {
+    display: "flex",
     height: '100%',
     width: 'calc(100% - 20px)',
     maxWidth: '400px',
@@ -46,25 +48,26 @@ function Schedules() {
     // @ts-ignore
     const params = schedulesRoute.useParams();
     const location = useLocation()
-    const {scheduleUuid} = params;
-    // const groups = location.search.groups ? JSON.parse(decodeURIComponent(location.search.groups)) : [];
+    const scheduleUuid = params["scheduleUuid?$lab_uuid"];
+    const selectedLabUuid = location.search.lab_uuid ? new URLSearchParams(location.search).get("lab_uuid") : null;
+
     const groups = JSON.parse(localStorage.getItem('groups') || '[]');
-    // const selectedGroup = location.search.selectedGroup ? JSON.parse(decodeURIComponent(location.search.selectedGroup)) : null;
+    const labs = JSON.parse(localStorage.getItem('labs') || '[]');
+
+    const selectedLab = labs ? labs.find((lab: Lab) => lab.uuid === selectedLabUuid) : null;
     const selectedGroup = groups ? groups.find((group: Group) => group.uuid === scheduleUuid) : null;
 
+    const isInitialRender = useRef(true)
     const [weekStartDate, setWeekStartDate] = useState(new Date());
     const [weekIndex, setWeekIndex] = useState(0);
     const [language, setLanguage] = useState<TLanguage>('hy');
-    const [loading, setLoading] = useState<boolean>()
-
     const dayRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
     const [highlightedDay, setHighlightedDay] = useState<TDayOfWeek | null>(null);
 
-
     const {data: schedule, isLoading, refetch} = useQuery({
-        queryKey: ['schedules', weekStartDate, scheduleUuid, language],
+        queryKey: ['schedules', weekStartDate, scheduleUuid, language, selectedLabUuid],
         queryFn: () => {
-            return fetch(`https://api.schedule.arsgreg.com/schedules/${scheduleUuid}?current_week=${weekStartDate.toISOString()}`, {
+            return fetch(`https://api.schedule.arsgreg.com/schedules/${scheduleUuid}?lab_uuid=${selectedLabUuid}&current_week=${weekStartDate.toISOString()}`, {
                 headers: {
                     'Accept-Language': language
                 },
@@ -111,44 +114,44 @@ function Schedules() {
         refetch();
     };
 
-    const isInitialRender = useRef(true); // To track the initial load
 
     useEffect(() => {
         if (isInitialRender && schedule) {
             const today = new Date().getDay();
             const currentDay: TDayOfWeek = today === 0 || today === 6 ? 'Monday' : DAYS_OF_WEEK[today - 1]; // Show Monday if weekend
             setHighlightedDay(currentDay);
-            console.log("I'm here")
-            console.log("1.", dayRefs.current,"2.",  dayRefs.current[currentDay])
             // Scroll to the current day
-           setTimeout(() => {
+            setTimeout(() => {
                 if (dayRefs.current[currentDay]) {
-                    dayRefs.current[currentDay]?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    dayRefs.current[currentDay]?.scrollIntoView({behavior: 'smooth', block: 'start'});
                 }
             }, 0);
         }
 
     }, [schedule]);
 
-    useEffect(() => {
-        if (highlightedDay) {
-            const timeoutId = setTimeout(() => setHighlightedDay(null), 3000);
-            return () => clearTimeout(timeoutId);
-        }
-    }, [highlightedDay]);
 
     const getCardClassName = (day: TDayOfWeek) => {
         return highlightedDay === day ? 'highlight-day' : '';
     };
 
     return (
-        <div>
-            <div className="container" style={containerStyle}>
+
+            <div className="container" style={{...containerStyle, flexDirection: "column"}}>
                 <div className="nav"
                      style={{'display': 'flex', 'justifyContent': 'space-between', 'padding': '20px 0'}}>
-                    <GroupSelect groups={groups || []} isLoading={isLoading} language={language}
-                                 selectedGroup={selectedGroup}></GroupSelect>
-                    <LanguageSwitcher selectedLanguage={language} setLanguage={setLanguage}/>
+                    <div style={{flex:'4 1 0%'}}>
+                        <GroupSelect groups={groups} isLoading={isLoading} language={language} selectedGroup={selectedGroup} selectedLabUuid={selectedLabUuid}></GroupSelect>
+                    </div>
+                    <div style={{flex:'4 1 0%'}}>
+                        <LabSelect labs={labs} isLoading={isLoading} language={language} selectedLab={selectedLab}
+                                   selectedGroupUuid={scheduleUuid}></LabSelect>
+                    </div>
+                    <div>
+                        <LanguageSwitcher selectedLanguage={language} setLanguage={setLanguage}/>
+                    </div>
+
+
                 </div>
 
                 <div style={weekStyle}>
@@ -159,7 +162,7 @@ function Schedules() {
 
                     <div style={{display: 'flex', alignItems: 'center'}}>
                         <span>{weekIndex ? pageContent['Next Week'][language] : pageContent['Current Week'][language]}</span>
-                        <img style={{paddingLeft: '15px'}}
+                        <img alt={""} style={{paddingLeft: '15px'}}
                              src={`/icons/${weekIndex ? 'hamarich.png' : 'haytarar.png'}`}/>
                     </div>
 
@@ -169,10 +172,12 @@ function Schedules() {
 
                 </div>
                 <div className='card-container' style={{
-                    height: '70%',
                     overflow: 'auto',
                     boxShadow: 'rgba(99, 99, 99, 0.2) 0px 2px 8px 0px',
-                    borderRadius: '2%'
+                    borderRadius: '2%',
+                    flexGrow:1,
+                    minHeight: 0,
+
                 }}>
                     {coursesByDay && DAYS_OF_WEEK.map(day => (
                         <div
@@ -188,7 +193,6 @@ function Schedules() {
                 <Footer/>
             </div>
 
-        </div>
 
     );
 }

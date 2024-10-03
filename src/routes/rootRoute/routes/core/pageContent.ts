@@ -65,9 +65,35 @@ export const pageContent: Record<string, Record<TLanguage, string>> ={
         'en':'Group',
         'ru':'Группа',
         'hy':'Խումբ',
+    },
+    'Type':{
+        'en':'Type',
+        'ru':'Тип',
+        'hy':'Տեսակ',
+    },
+    'Lecture':{
+        'en':'Lecture',
+        'ru':'Лекция',
+        'hy':'Դասախոսություն',
+    },
+    'Practical':{
+        'en':'Practical',
+        'ru':'Практика',
+        'hy':'Գործնական',
+    },
+    'Laboratory':{
+        'en':'Laboratory',
+        'ru':'Лабораторная',
+        'hy':'Լաբորատոր',
+    },
+    'CourseWork':{
+        'en':'Course Work',
+        'ru':'Курсовая работа',
+        'hy':'Կուրսային աշխատանք',
+    },
+    'Lab':{
+        'en':'Laboratory',
+        'ru':'Лабораторная',
+        'hy':'Լաբորատոր',
     }
-
-
-
-
 }

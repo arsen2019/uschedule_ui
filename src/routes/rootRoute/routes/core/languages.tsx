@@ -1,5 +1,5 @@
 import React from 'react';
-import {Avatar, Select} from 'antd';
+import {Select} from 'antd';
 import {TLanguage} from "./pageContent";
 
 
