@@ -25,7 +25,7 @@ function isCurrentCourse(course:TCourse): boolean {
     const [endHour, endMinutes] = course.end_time.split(":").map(Number);
 
     const startTime = startHour * 60 + startMinutes;
-    const endTime = endHour * 60 + endMinutes + 20;
+    const endTime = endHour * 60 + endMinutes;
     const currentTime = currentHour * 60 + currentMinutes;
 
     return currentTime >= startTime && currentTime < endTime;

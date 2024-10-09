@@ -119,14 +119,18 @@ function Schedules() {
     useEffect(() => {
         if (isInitialRender && schedule) {
             const today = new Date().getDay();
-            const currentDay: TDayOfWeek = today === 0 || today === 6 ? 'Monday' : DAYS_OF_WEEK[today - 1]; // Show Monday if weekend
+            const currentDay: TDayOfWeek = today === 0 || today === 6 ? 'Monday' : DAYS_OF_WEEK[today - 1];
             setHighlightedDay(currentDay);
-            // Scroll to the current day
             setTimeout(() => {
-                if (dayRefs.current[currentDay]) {
-                    dayRefs.current[currentDay]?.scrollIntoView({behavior: 'smooth', block: 'start'});
-                }
-            }, 0);
+                requestAnimationFrame(() => {
+                    if (dayRefs.current[currentDay]) {
+                        dayRefs.current[currentDay]?.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start',
+                        });
+                    }
+                });
+            }, 100);
         }
 
     }, [schedule]);
