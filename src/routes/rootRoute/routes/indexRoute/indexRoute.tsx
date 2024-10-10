@@ -3,13 +3,13 @@ import {rootRoute} from "../../rootRoute";
 import React, {useEffect, useState} from "react";
 import Title from "antd/lib/typography/Title";
 import {components} from "../../../../types/api"
-import GroupSelect from "../core/groupSelect"
-import {Footer} from "../core/footer";
-import {LanguageSwitcher} from "../core/languages";
-import {TLanguage, pageContent} from "../core/pageContent";
-import LabSelect from "../core/labSelect";
-import {useGetGroups} from "../core/hooks/useGetGroups";
-import {useGetLabs} from "../core/hooks/useGetLabs";
+import GroupSelect from "../../../../core/components/GroupSelect"
+import {Footer} from "../../../../core/components/Footer";
+import {LanguageSwitcher} from "../../../../core/components/LanguageSwitcher";
+import {TLanguage, translations} from "../../../../core/constants/translations";
+import LabSelect from "../../../../core/components/LabSelect";
+import {useGetGroups} from "../../../../core/hooks/useGetGroups";
+import {useGetLabs} from "../../../../core/hooks/useGetLabs";
 
 export const indexRoute = createRoute({
     getParentRoute: () => rootRoute,
@@ -40,7 +40,7 @@ function Index() {
     const [selectedGroupUuid, setSelectedGroupUuid] = useState<string | null>(localStorage.getItem('selectedGroupUuid') || null)
     const [showLabSelect, setShowLabSelect] = useState(false)
     const navigate = useNavigate();
-    document.title = `${pageContent.Schedule[language]}`
+    document.title = `${translations.Schedule[language]}`
 
 
    const {groups, isLoading} = useGetGroups({language})
@@ -81,7 +81,7 @@ function Index() {
             </div>
 
             <div className='content' style={contentStyle}>
-                <Title level={2} style={{textAlign: "center"}}>{pageContent['Select a Group'][language]}</Title>
+                <Title level={2} style={{textAlign: "center"}}>{translations['Select a Group'][language]}</Title>
                 <div style={{width: 220}}>
                     <GroupSelect groups={groups || []} isLoading={isLoading} language={language}
                                  selectedGroup={null} onGroupChange={handleGroupSelect}

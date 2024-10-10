@@ -5,7 +5,7 @@ import reportWebVitals from './reportWebVitals';
 import {RouterProvider} from "@tanstack/react-router";
 import {router} from "./router";
 import {QueryClient, QueryClientProvider} from "@tanstack/react-query";
-import {Footer} from "./routes/rootRoute/routes/core/footer";
+import {Footer} from "./core/components/Footer";
 
 const root = ReactDOM.createRoot(
     document.getElementById('root') as HTMLElement

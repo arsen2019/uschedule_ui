@@ -1,6 +1,6 @@
 import React from 'react';
 import {Select} from 'antd';
-import {TLanguage} from "./pageContent";
+import {TLanguage} from "../constants/translations";
 
 
 const {Option} = Select;

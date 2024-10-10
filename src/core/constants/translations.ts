@@ -1,6 +1,6 @@
 export type TLanguage = 'en' | 'ru' | 'hy'
 
-export const pageContent: Record<string, Record<TLanguage, string>> ={
+export const translations: Record<string, Record<TLanguage, string>> ={
     'Teacher': {
         'en':'Teacher',
         'ru':'Преподаватель',

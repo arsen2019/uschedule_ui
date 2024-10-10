@@ -5,13 +5,13 @@ import React, {useEffect, useRef, useState} from "react";
 import {DayCard, DAYS_OF_WEEK, TDayOfWeek, TCourse} from "./components/scheduleConsts";
 import {LeftOutlined, RightOutlined} from '@ant-design/icons'
 import {Button} from "antd";
-import GroupSelect from "../core/groupSelect";
-import {Footer} from "../core/footer";
-import {LanguageSwitcher} from "../core/languages";
-import {pageContent, TLanguage} from "../core/pageContent";
+import GroupSelect from "../../../../core/components/GroupSelect";
+import {Footer} from "../../../../core/components/Footer";
+import {LanguageSwitcher} from "../../../../core/components/LanguageSwitcher";
+import {translations, TLanguage} from "../../../../core/constants/translations";
 import {Group, Lab} from "../indexRoute/indexRoute";
-import LabSelect from "../core/labSelect";
-import {useGetGroups} from "../core/hooks/useGetGroups";
+import LabSelect from "../../../../core/components/LabSelect";
+import {useGetGroups} from "../../../../core/hooks/useGetGroups";
 
 export const schedulesRoute = createRoute({
     getParentRoute: () => rootRoute,
@@ -96,9 +96,9 @@ function Schedules() {
     }, [schedule]);
     useEffect(() => {
         if (selectedGroup) {
-            document.title = `${selectedGroup.name} | ${pageContent.Schedule[language]}`;
+            document.title = `${selectedGroup.name} | ${translations.Schedule[language]}`;
         } else {
-            document.title = `${pageContent.Schedule[language]}`;
+            document.title = `${translations.Schedule[language]}`;
         }
     }, [selectedGroup]);
 
@@ -167,7 +167,7 @@ function Schedules() {
                         shape='circle' icon={<LeftOutlined/>}></Button>
 
                 <div style={{display: 'flex', alignItems: 'center'}}>
-                    <span>{weekIndex ? pageContent['Next Week'][language] : pageContent['Current Week'][language]}</span>
+                    <span>{weekIndex ? translations['Next Week'][language] : translations['Current Week'][language]}</span>
                     <img alt={""} style={{paddingLeft: '15px'}}
                          src={`/icons/${weekIndex ? 'hamarich.png' : 'haytarar.png'}`}/>
                 </div>

@@ -1,7 +1,7 @@
 import {useNavigate} from "@tanstack/react-router";
 import {Select} from "antd";
-import {pageContent, TLanguage} from "./pageContent";
-import {components} from "../../../../types/api";
+import {translations, TLanguage} from "../constants/translations";
+import {components} from "../../types/api";
 
 type Lab = components["schemas"]["Lab"]
 
@@ -32,7 +32,7 @@ function LabSelect({labs, isLoading, language, selectedLab, selectedGroupUuid}: 
         <div>
             <Select
                 loading={isLoading}
-                placeholder={selectedLab ? selectedLab.name : pageContent['Lab'][language]}
+                placeholder={selectedLab ? selectedLab.name : translations['Lab'][language]}
                 onChange={onLabChange}
                 fieldNames={{
                     label: 'name',

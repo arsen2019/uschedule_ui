@@ -1,7 +1,7 @@
 import {useNavigate} from "@tanstack/react-router";
-import {Group} from "../indexRoute/indexRoute";
+import {Group} from "../../routes/rootRoute/routes/indexRoute/indexRoute";
 import {Select} from "antd";
-import {pageContent, TLanguage} from "./pageContent";
+import {translations, TLanguage} from "../constants/translations";
 
 type GroupSelectProps = {
     groups: Group[]
@@ -31,7 +31,7 @@ function GroupSelect({groups, isLoading, language, selectedGroup, onGroupChange,
         <div>
             <Select
                 loading={isLoading}
-                placeholder={selectedGroup ? selectedGroup.name : pageContent['Group'][language]}
+                placeholder={selectedGroup ? selectedGroup.name : translations['Group'][language]}
                 onChange={handleGroupChange}
                 fieldNames={{
                     label: 'name',

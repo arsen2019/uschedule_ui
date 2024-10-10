@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from "react";
 import {Card, Collapse, Col, CollapseProps} from "antd";
 import {components} from "../../../../../types/api"
-import {TLanguage, pageContent} from "../../core/pageContent";
+import {TLanguage, translations} from "../../../../../core/constants/translations";
 
 const cardStyle = {
     width: '100%',
@@ -62,10 +62,10 @@ export const DayCard = ({day, courses, language}: { day: TDayOfWeek, courses: TC
                 key: course.uuid,
                 children: (
                     <>
-                        <p>{`${pageContent.Teacher[language]}: ${course.teacher?.first_name}. ${course.teacher?.last_name}`}</p>
-                        <p>{`${pageContent.Type[language]}: ${pageContent[course.type][language]}`}</p>
-                        <p>{`${pageContent.Building[language]}: ${course.building?.name}`}</p>
-                        <p>{`${pageContent.Room[language]}: ${course.room?.name}`}</p>
+                        <p>{`${translations.Teacher[language]}: ${course.teacher?.first_name}. ${course.teacher?.last_name}`}</p>
+                        <p>{`${translations.Type[language]}: ${translations[course.type][language]}`}</p>
+                        <p>{`${translations.Building[language]}: ${course.building?.name}`}</p>
+                        <p>{`${translations.Room[language]}: ${course.room?.name}`}</p>
                     </>
                 )
             }
@@ -78,7 +78,7 @@ export const DayCard = ({day, courses, language}: { day: TDayOfWeek, courses: TC
     return (
         <div>
             <Col>
-                <Card style={cardStyle} title={pageContent[day][language]} bordered={true}>
+                <Card style={cardStyle} title={translations[day][language]} bordered={true}>
                     {courses.length > 0 ? (
                         <Collapse accordion items={items} activeKey={activeKey} onChange={handleChange} />
                     ) : (

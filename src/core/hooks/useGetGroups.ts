@@ -1,6 +1,6 @@
 import {useQuery} from "@tanstack/react-query";
-import {Group} from "../../indexRoute/indexRoute";
-import {TLanguage} from "../pageContent";
+import {Group} from "../../routes/rootRoute/routes/indexRoute/indexRoute";
+import {TLanguage} from "../constants/translations";
 import {useMemo} from "react";
 
 interface IUseGetGroupsParams {
