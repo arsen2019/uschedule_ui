@@ -1,6 +1,5 @@
 import {createRoute, useNavigate} from "@tanstack/react-router";
 import {rootRoute} from "../../rootRoute";
-import {useQuery} from "@tanstack/react-query";
 import React, {useEffect, useState} from "react";
 import Title from "antd/lib/typography/Title";
 import {components} from "../../../../types/api"
@@ -10,6 +9,7 @@ import {LanguageSwitcher} from "../core/languages";
 import {TLanguage, pageContent} from "../core/pageContent";
 import LabSelect from "../core/labSelect";
 import {useGetGroups} from "../core/hooks/useGetGroups";
+import {useGetLabs} from "../core/hooks/useGetLabs";
 
 export const indexRoute = createRoute({
     getParentRoute: () => rootRoute,
@@ -45,28 +45,10 @@ function Index() {
 
    const {groups, isLoading} = useGetGroups({language})
 
-    const {data: labs, isFetching} = useQuery<Lab[]>({
-        queryKey: ['labs', language],
-        queryFn: () => {
-            return fetch('https://api.schedule.arsgreg.com/groups/labs', {
-                headers: {
-                    'Accept-Language': language
-                },
-            })
-                .then((res) => {
-                    if (res.ok) {
-                        return res.json();
-                    }
-                    return [];
-                })
-
-        }
-    });
+    const {labs, isFetching} = useGetLabs({language})
 
     useEffect(() => {
 
-        console.log("Lab:", selectedLabUuid)
-        console.log("Group:", selectedGroupUuid)
         if (selectedGroupUuid && selectedLabUuid) {
 
             localStorage.setItem('selectedGroupUuid', selectedGroupUuid);
