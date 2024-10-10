@@ -15,8 +15,6 @@ type LabSelectProps = {
 
 function LabSelect({labs, isLoading, language, selectedLab, selectedGroupUuid}: LabSelectProps) {
     const navigate = useNavigate()
-    localStorage.setItem('labs', JSON.stringify(labs));
-
     const onLabChange = (selectedLabUuid: Lab['uuid']) => {
         localStorage.setItem('selectedLabUuid', selectedLabUuid)
         navigate({

@@ -59,7 +59,7 @@ function Schedules() {
     const selectedLab = labs ? labs.find((lab: Lab) => lab.uuid === selectedLabUuid) : null;
     const selectedGroup = groups ? groups.find((group: Group) => group.uuid === scheduleUuid) : null;
 
-    const isInitialRender = useRef(true)
+    const isInitialRender = useState(true)
     const [weekStartDate, setWeekStartDate] = useState(new Date());
     const [weekIndex, setWeekIndex] = useState(0);
     const dayRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
@@ -144,7 +144,7 @@ function Schedules() {
 
         <div className="container" style={{...containerStyle, flexDirection: "column"}}>
             <div className="nav"
-                 style={{'display': 'flex', 'justifyContent': 'space-between', 'padding': '20px 0'}}>
+                 style={{'display': 'flex', 'justifyContent': 'space-between', 'padding': '20px 0', "gap": "20px"}}>
                 <div style={{flex: '4 1 0%'}}>
                     <GroupSelect groups={groups} isLoading={isLoading} language={language} selectedGroup={selectedGroup}
                                  selectedLabUuid={selectedLabUuid}></GroupSelect>
