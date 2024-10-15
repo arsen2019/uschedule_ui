@@ -64,7 +64,6 @@ function Schedules() {
     const [weekIndex, setWeekIndex] = useState(0);
     const dayRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
     const [highlightedDay, setHighlightedDay] = useState<TDayOfWeek | null>(null);
-
     const {data: schedule, isLoading, refetch} = useQuery({
         queryKey: ['schedules', weekStartDate, scheduleUuid, language, selectedLabUuid],
         queryFn: () => {
@@ -168,8 +167,8 @@ function Schedules() {
 
                 <div style={{display: 'flex', alignItems: 'center'}}>
                     <span>{weekIndex ? translations['Next Week'][language] : translations['Current Week'][language]}</span>
-                    <img alt={""} style={{paddingLeft: '15px'}}
-                         src={`/icons/${weekIndex ? 'hamarich.png' : 'haytarar.png'}`}/>
+                    <img alt={""} style={{paddingLeft: '15px', width:'20px'}}
+                         src={`/icons/${weekIndex ? 'hamarich.svg' : 'haytarar.svg'}`}/>
                 </div>
 
                 <Button disabled={weekIndex > 0} onClick={handleNextWeek} shape='circle'
@@ -191,7 +190,7 @@ function Schedules() {
                         ref={(el) => dayRefs.current[day] = el}
                         className={getCardClassName(day)}
                     >
-                        <DayCard key={day} day={day} courses={coursesByDay[day]} language={language}/>
+                        <DayCard key={day} day={day} week={weekStartDate.getDate()} courses={coursesByDay[day]} language={language}/>
                     </div>
                 ))}
 
