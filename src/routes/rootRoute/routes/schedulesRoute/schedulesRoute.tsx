@@ -12,6 +12,7 @@ import {translations, TLanguage} from "../../../../core/constants/translations";
 import {Group, Lab} from "../indexRoute/indexRoute";
 import LabSelect from "../../../../core/components/LabSelect";
 import {useGetGroups} from "../../../../core/hooks/useGetGroups";
+import {api} from "../../../../core/services/api";
 
 export const schedulesRoute = createRoute({
     getParentRoute: () => rootRoute,
@@ -67,16 +68,13 @@ function Schedules() {
     const {data: schedule, isLoading, refetch} = useQuery({
         queryKey: ['schedules', weekStartDate, scheduleUuid, language, selectedLabUuid],
         queryFn: () => {
-            return fetch(`https://api.schedule.arsgreg.com/schedules/${scheduleUuid}?lab_uuid=${selectedLabUuid}&current_week=${weekStartDate.toISOString()}`, {
+            return api.get(`/schedules/${scheduleUuid}?lab_uuid=${selectedLabUuid}&current_week=${weekStartDate.toISOString()}`, {
                 headers: {
                     'Accept-Language': language
                 },
             })
-                .then((res) => {
-                    if (res.ok) {
-                        return res.json();
-                    }
-                    return [];
+                .then((response) => {
+                    return response.data
                 })
 
         }
@@ -167,8 +165,8 @@ function Schedules() {
 
                 <div style={{display: 'flex', alignItems: 'center'}}>
                     <span>{weekIndex ? translations['Next Week'][language] : translations['Current Week'][language]}</span>
-                    <img alt={""} style={{paddingLeft: '15px', width:'20px'}}
-                         src={`/icons/${weekIndex ? 'hamarich.svg' : 'haytarar.svg'}`}/>
+                    <img alt={""} style={{paddingLeft: '15px', width: '20px'}}
+                         src={`/icons/${weekIndex ? 'haytarar.svg' : 'hamarich.svg'}`}/>
                 </div>
 
                 <Button disabled={weekIndex > 0} onClick={handleNextWeek} shape='circle'
@@ -190,7 +188,8 @@ function Schedules() {
                         ref={(el) => dayRefs.current[day] = el}
                         className={getCardClassName(day)}
                     >
-                        <DayCard key={day} day={day} week={weekStartDate.getDate()} courses={coursesByDay[day]} language={language}/>
+                        <DayCard key={day} day={day} week={weekStartDate.getDate()} courses={coursesByDay[day]}
+                                 language={language}/>
                     </div>
                 ))}
 

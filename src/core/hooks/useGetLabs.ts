@@ -2,6 +2,7 @@ import {TLanguage} from "../constants/translations";
 import {useMemo} from "react";
 import {useQuery} from "@tanstack/react-query";
 import {Lab} from "../../routes/rootRoute/routes/indexRoute/indexRoute";
+import {api} from "../services/api";
 
 interface IUseGetLabsProps {
     language: TLanguage
@@ -24,21 +25,15 @@ export function useGetLabs(params: IUseGetLabsProps) {
     const {data: labs, isFetching} = useQuery<Lab[]>({
         queryKey: ['labs', language],
         queryFn: () => {
-            return fetch('https://api.schedule.arsgreg.com/groups/labs', {
+            return api.get('/groups/labs', {
                 headers: {
                     'Accept-Language': language
                 },
             })
-                .then((res) => {
-                    if (res.ok) {
-                        return res.json();
-                    }
-                    return [];
-                }).then((labs) => {
-                    localStorage.setItem(LABS_LOCAL_STORAGE_KEY, JSON.stringify(labs))
-                    return labs
+                .then((response) => {
+                    localStorage.setItem(LABS_LOCAL_STORAGE_KEY, JSON.stringify(response.data))
+                    return response.data
                 })
-
         }
     });
     return {labs, isFetching}
