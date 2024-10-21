@@ -111,23 +111,36 @@ function Schedules() {
         setWeekIndex(prev => prev - 1)
         refetch();
     };
-
+    console.log(new Date().getTimezoneOffset())
+    const checkTimeZone = () => {
+        const { timeZone } = Intl.DateTimeFormat().resolvedOptions();
+        const date = new Date()
+        const minutes = date.getUTCMinutes()
+        if(timeZone != 'Asia/Yerevan'){
+            return `Time is displayed with Asia/Yerevan timezone ${date.getUTCHours() + 4}:${minutes > 10 ? minutes : '0' + minutes}`
+        }
+        return ''
+    }
 
     useEffect(() => {
         if (isInitialRender && schedule) {
             const today = new Date().getDay();
-            const currentDay: TDayOfWeek = today === 0 || today === 6 ? 'Monday' : DAYS_OF_WEEK[today - 1];
-            setHighlightedDay(currentDay);
-            setTimeout(() => {
-                requestAnimationFrame(() => {
-                    if (dayRefs.current[currentDay]) {
-                        dayRefs.current[currentDay]?.scrollIntoView({
-                            behavior: 'smooth',
-                            block: 'start',
-                        });
-                    }
-                });
-            }, 100);
+            if (today != 0 && today != 6) {
+                const currentDay: TDayOfWeek = DAYS_OF_WEEK[today - 1];
+                setHighlightedDay(currentDay);
+                setTimeout(() => {
+                    requestAnimationFrame(() => {
+                        if (dayRefs.current[currentDay]) {
+                            dayRefs.current[currentDay]?.scrollIntoView({
+                                behavior: 'smooth',
+                                block: 'start',
+                            });
+                        }
+                    });
+                }, 100);
+            }
+
+
         }
 
     }, [schedule]);
@@ -172,8 +185,8 @@ function Schedules() {
                 <Button disabled={weekIndex > 0} onClick={handleNextWeek} shape='circle'
                         icon={<RightOutlined/>}></Button>
 
-
             </div>
+            <span style={{display : "flex", justifyContent : "center", margin: "5px 0"}}>{checkTimeZone()}</span>
             <div className='card-container' style={{
                 overflow: 'auto',
                 boxShadow: 'rgba(99, 99, 99, 0.2) 0px 2px 8px 0px',
