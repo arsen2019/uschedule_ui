@@ -16,7 +16,7 @@ export const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({selectedLangu
     };
 
     return (
-        <Select defaultValue={selectedLanguage} onChange={handleChange}>
+        <Select defaultValue={selectedLanguage} onChange={handleChange} className='language_switcher'>
             <Option value="hy"><img src="/icons/armenia.png" alt="Armenian"
                                     style={{'width': '30px', 'display': 'flex', 'alignItems': 'center'}}/></Option>
             <Option value="ru"><img src="/icons/russia.png" alt="Armenian"

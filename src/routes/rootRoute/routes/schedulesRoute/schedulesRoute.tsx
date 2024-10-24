@@ -6,7 +6,7 @@ import {DayCard, DAYS_OF_WEEK, TDayOfWeek, TCourse} from "./components/scheduleC
 import {LeftOutlined, RightOutlined} from '@ant-design/icons'
 import {Button} from "antd";
 import GroupSelect from "../../../../core/components/GroupSelect";
-import {Footer} from "../../../../core/components/Footer";
+import {Footer} from "../../../../core/components/Footer/Footer";
 import {LanguageSwitcher} from "../../../../core/components/LanguageSwitcher";
 import {translations, TLanguage} from "../../../../core/constants/translations";
 import {Group, Lab} from "../indexRoute/indexRoute";

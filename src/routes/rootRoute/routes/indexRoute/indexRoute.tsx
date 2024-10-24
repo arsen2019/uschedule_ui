@@ -4,7 +4,7 @@ import React, {useEffect, useState} from "react";
 import Title from "antd/lib/typography/Title";
 import {components} from "../../../../types/api"
 import GroupSelect from "../../../../core/components/GroupSelect"
-import {Footer} from "../../../../core/components/Footer";
+import {Footer} from "../../../../core/components/Footer/Footer";
 import {LanguageSwitcher} from "../../../../core/components/LanguageSwitcher";
 import {TLanguage, translations} from "../../../../core/constants/translations";
 import LabSelect from "../../../../core/components/LabSelect";
