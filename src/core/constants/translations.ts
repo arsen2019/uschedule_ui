@@ -95,5 +95,11 @@ export const translations: Record<string, Record<TLanguage, string>> ={
         'en':'Laboratory',
         'ru':'Лабораторная',
         'hy':'Լաբորատոր',
+    },
+    'Timezone':{
+        'en':'Time is displayed with Asia/Yerevan timezone',
+        'ru':'Время отображается с учетом часового пояса Азия/Ереван',
+        'hy':'Ժամանակը ցուցադրվում է Երևանի ժամային գոտիով',
     }
+
 }

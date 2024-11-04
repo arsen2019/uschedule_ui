@@ -117,7 +117,7 @@ function Schedules() {
         const date = new Date()
         const minutes = date.getUTCMinutes()
         if(timeZone != 'Asia/Yerevan'){
-            return `Time is displayed with Asia/Yerevan timezone ${date.getUTCHours() + 4}:${minutes > 10 ? minutes : '0' + minutes}`
+            return `${translations['Timezone'][language]} ${date.getUTCHours() + 4}:${minutes >= 10 ? minutes : '0' + minutes}`
         }
         return ''
     }
@@ -186,7 +186,7 @@ function Schedules() {
                         icon={<RightOutlined/>}></Button>
 
             </div>
-            <span style={{display : "flex", justifyContent : "center", margin: "5px 0"}}>{checkTimeZone()}</span>
+            <span style={{display : "flex", justifyContent : "center", marginBottom: "10px", fontSize:'13px'}}>{checkTimeZone()}</span>
             <div className='card-container' style={{
                 overflow: 'auto',
                 boxShadow: 'rgba(99, 99, 99, 0.2) 0px 2px 8px 0px',
