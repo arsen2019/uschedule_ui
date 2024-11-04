@@ -19,8 +19,9 @@ export type TDayOfWeek = typeof DAYS_OF_WEEK[number];
 export type TCourse = components["schemas"]["Course"]
 
 function isCurrentCourse(course: TCourse): boolean {
-    const currentHour = new Date().getHours();
-    const currentMinutes = new Date().getMinutes();
+    const YEREVAN_TIME_GMT = 4
+    const currentHour = new Date().getUTCHours() + YEREVAN_TIME_GMT;
+    const currentMinutes = new Date().getUTCMinutes();
     const [startHour, startMinutes] = course.start_time.split(":").map(Number);
     const [endHour, endMinutes] = course.end_time.split(":").map(Number);
 
