@@ -2,6 +2,7 @@ import React, {useEffect, useState} from "react";
 import {Card, Collapse, Col, CollapseProps} from "antd";
 import {components} from "../../../../../types/api"
 import {TLanguage, translations} from "../../../../../core/constants/translations";
+import ReactGA from "react-ga4";
 
 const cardStyle = {
     width: '100%',
@@ -78,7 +79,16 @@ export const DayCard = ({day, week, courses, language}: {
     })
 
     const handleChange = (key: string | string[]) => {
+        if (key.length) {
+            ReactGA.event({
+                category: 'Course Select',
+                action: 'Select Course',
+                label: courses.find((course) => course.uuid === key[0])?.name
+            })
+            console.log(key)
+        }
         setActiveKey(key)
+
     }
 
     return (
