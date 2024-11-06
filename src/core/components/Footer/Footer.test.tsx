@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import { Footer } from './Footer'; // Adjust the import path as needed
+import { Footer } from './Footer';
 
 describe('Footer Component', () => {
   test('renders Footer without crashing', () => {

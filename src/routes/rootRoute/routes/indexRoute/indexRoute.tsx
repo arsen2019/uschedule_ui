@@ -3,11 +3,11 @@ import {rootRoute} from "../../rootRoute";
 import React, {useEffect, useState} from "react";
 import Title from "antd/lib/typography/Title";
 import {components} from "../../../../types/api"
-import GroupSelect from "../../../../core/components/GroupSelect"
+import GroupSelect from "../../../../core/components/GroupSelect/GroupSelect"
 import {Footer} from "../../../../core/components/Footer/Footer";
-import {LanguageSwitcher} from "../../../../core/components/LanguageSwitcher";
+import {LanguageSwitcher} from "../../../../core/components/LanguageSwitcher/LanguageSwitcher";
 import {TLanguage, translations} from "../../../../core/constants/translations";
-import LabSelect from "../../../../core/components/LabSelect";
+import LabSelect from "../../../../core/components/LabSelect/LabSelect";
 import {useGetGroups} from "../../../../core/hooks/useGetGroups";
 import {useGetLabs} from "../../../../core/hooks/useGetLabs";
 

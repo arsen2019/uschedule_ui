@@ -5,12 +5,12 @@ import React, {useEffect, useRef, useState} from "react";
 import {DayCard, DAYS_OF_WEEK, TDayOfWeek, TCourse} from "./components/scheduleConsts";
 import {LeftOutlined, RightOutlined} from '@ant-design/icons'
 import {Button} from "antd";
-import GroupSelect from "../../../../core/components/GroupSelect";
+import GroupSelect from "../../../../core/components/GroupSelect/GroupSelect";
 import {Footer} from "../../../../core/components/Footer/Footer";
-import {LanguageSwitcher} from "../../../../core/components/LanguageSwitcher";
+import {LanguageSwitcher} from "../../../../core/components/LanguageSwitcher/LanguageSwitcher";
 import {translations, TLanguage} from "../../../../core/constants/translations";
 import {Group, Lab} from "../indexRoute/indexRoute";
-import LabSelect from "../../../../core/components/LabSelect";
+import LabSelect from "../../../../core/components/LabSelect/LabSelect";
 import {useGetGroups} from "../../../../core/hooks/useGetGroups";
 import {api} from "../../../../core/services/api";
 
