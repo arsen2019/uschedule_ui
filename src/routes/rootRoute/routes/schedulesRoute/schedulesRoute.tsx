@@ -111,7 +111,6 @@ function Schedules() {
         setWeekIndex(prev => prev - 1)
         refetch();
     };
-    console.log(new Date().getTimezoneOffset())
     const checkTimeZone = () => {
         const { timeZone } = Intl.DateTimeFormat().resolvedOptions();
         const date = new Date()

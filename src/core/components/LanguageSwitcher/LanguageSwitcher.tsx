@@ -12,10 +12,8 @@ interface LanguageSwitcherProps {
 
 export const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({selectedLanguage, setLanguage}) => {
     const handleChange = (value: TLanguage) => {
-        ReactGA.event({
-            category:'Language Switcher',
-            action: 'Change Language',
-            label: value,
+        ReactGA.event('language_switch', {
+            selected_language: value,
         });
         setLanguage(value);
     };

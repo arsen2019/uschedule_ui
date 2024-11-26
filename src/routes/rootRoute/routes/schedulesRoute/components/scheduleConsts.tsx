@@ -79,13 +79,12 @@ export const DayCard = ({day, week, courses, language}: {
     })
 
     const handleChange = (key: string | string[]) => {
-        if (key.length) {
-            ReactGA.event({
-                category: 'Course Select',
-                action: 'Select Course',
-                label: courses.find((course) => course.uuid === key[0])?.name
-            })
-            console.log(key)
+        const selectedCourse = courses.find(course => course.uuid === key[0]);
+        if (selectedCourse) {
+            ReactGA.event('select_course', {
+                course_name: selectedCourse.name,
+                day: day,
+            });
         }
         setActiveKey(key)
 
