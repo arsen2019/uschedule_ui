@@ -4,6 +4,8 @@ services:
   frontend:
     build:
       dockerfile: Dockerfile
+      args:
+        SENTRY_AUTH_TOKEN: "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"
     container_name: uschedule-frontend
     ports:
       - "3000:3000"
