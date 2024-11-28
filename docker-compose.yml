@@ -5,10 +5,12 @@ services:
     build:
       dockerfile: Dockerfile
       args:
-        SENTRY_AUTH_TOKEN: "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"
+        BUILD_ENV: build-${BUILD_ENV:-prod}
     container_name: uschedule-frontend
     ports:
       - "3000:3000"
+    env_file:
+      - .env.${BUILD_ENV:-prod}
     networks:
       - uschedule-net
       - traefik
@@ -24,6 +26,7 @@ networks:
   traefik:
     external: true
   uschedule-net:
+    external: true
     name: uschedule-net
     driver: bridge
 volumes:
