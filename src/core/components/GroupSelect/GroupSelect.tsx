@@ -40,6 +40,7 @@ function GroupSelect({groups, isLoading, language, selectedGroup, onGroupChange,
                 style={{width: '100%'}}
                 options={groups}
                 value={selectedGroup ? selectedGroup.uuid : undefined}
+                data-testid="group-select"
             />
         </div>
 

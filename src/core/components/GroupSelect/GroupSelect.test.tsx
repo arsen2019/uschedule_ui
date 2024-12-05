@@ -2,7 +2,7 @@ import React from 'react';
 import {render, screen, fireEvent} from '@testing-library/react';
 import GroupSelect from './GroupSelect';
 import {translations, TLanguage} from '../../constants/translations';
-import {MemoryRouter, Route, Routes} from 'react-router-dom';
+import {renderWithRouter} from "../test/utils";
 
 describe('GroupSelect Component', () => {
     const groups = [
@@ -13,16 +13,6 @@ describe('GroupSelect Component', () => {
     const selectedLabUuid = 'lab-uuid';
     const language: TLanguage = 'en';
 
-    function renderWithRouter(ui: any) {
-        return render(
-            <MemoryRouter initialEntries={['/']}>
-                <Routes>
-                    <Route path="/" element={ui}/>
-                    <Route path="/schedules/:scheduleUuid" element={<div>Schedules Page</div>}/>
-                </Routes>
-            </MemoryRouter>
-        );
-    }
 
     it('displays the placeholder text based on language when no group is selected', () => {
         renderWithRouter(
@@ -34,8 +24,8 @@ describe('GroupSelect Component', () => {
                 selectedLabUuid={selectedLabUuid}
             />
         );
-
-        const selectElement = screen.getByRole('combobox');
+        screen.debug()
+        const selectElement = screen.getByTestId('group-select');
         fireEvent.mouseDown(selectElement);
 
         expect(screen.getByText(translations['Group'][language])).toBeInTheDocument();
