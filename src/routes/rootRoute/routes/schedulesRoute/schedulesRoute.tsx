@@ -11,7 +11,7 @@ import {LanguageSwitcher} from "../../../../core/components/LanguageSwitcher/Lan
 import {translations, TLanguage} from "../../../../core/constants/translations";
 import {Group, Lab} from "../indexRoute/indexRoute";
 import LabSelect from "../../../../core/components/LabSelect/LabSelect";
-import {useGetGroups} from "../../../../core/hooks/useGetGroups";
+import {useGetGroups} from "../../../../core/hooks/useGetGroups/useGetGroups";
 import {api} from "../../../../core/services/api";
 
 export const schedulesRoute = createRoute({
@@ -107,6 +107,8 @@ function Schedules() {
     };
 
     const handlePreviousWeek = () => {
+                throw new Error("Something went wrong... 2")
+
         setWeekStartDate((prev) => addDays(prev, -7));
         setWeekIndex(prev => prev - 1)
         refetch();

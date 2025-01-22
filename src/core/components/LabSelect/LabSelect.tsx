@@ -16,6 +16,7 @@ type LabSelectProps = {
 function LabSelect({labs, isLoading, language, selectedLab, selectedGroupUuid}: LabSelectProps) {
     const navigate = useNavigate()
     const onLabChange = (selectedLabUuid: Lab['uuid']) => {
+
         localStorage.setItem('selectedLabUuid', selectedLabUuid)
         navigate({
             to: `/schedules/$scheduleUuid`,
@@ -41,6 +42,7 @@ function LabSelect({labs, isLoading, language, selectedLab, selectedGroupUuid}: 
                 style={{width: '100%'}}
                 options={labs}
                 value={selectedLab ? selectedLab.uuid : undefined}
+                data-testid="lab-select"
             />
         </div>
     );

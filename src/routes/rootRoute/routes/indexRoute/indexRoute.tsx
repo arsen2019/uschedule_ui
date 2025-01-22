@@ -8,8 +8,8 @@ import {Footer} from "../../../../core/components/Footer/Footer";
 import {LanguageSwitcher} from "../../../../core/components/LanguageSwitcher/LanguageSwitcher";
 import {TLanguage, translations} from "../../../../core/constants/translations";
 import LabSelect from "../../../../core/components/LabSelect/LabSelect";
-import {useGetGroups} from "../../../../core/hooks/useGetGroups";
-import {useGetLabs} from "../../../../core/hooks/useGetLabs";
+import {useGetGroups} from "../../../../core/hooks/useGetGroups/useGetGroups";
+import {useGetLabs} from "../../../../core/hooks/useGetLabs/useGetLabs";
 
 export const indexRoute = createRoute({
     getParentRoute: () => rootRoute,
