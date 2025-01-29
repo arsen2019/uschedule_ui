@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  frontend:
+    image: ghcr.io/arsen2019/uschedule_ui:${GIT_COMMIT_HASH:-latest}
+    deploy:
+      update_config:
+        order: start-first
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+    networks:
+      - uschedule-net
+      - traefik-net
+
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.frontend.rule=Host(`schedule.arsgreg.com`)"
+      - "traefik.http.routers.frontend.entrypoints=websecure"
+      - "traefik.http.routers.frontend.tls=true"
+      - "traefik.http.routers.frontend.tls.certresolver=myresolver"
+      - "traefik.http.services.frontend.loadbalancer.server.port=3000"
+      - "traefik.http.services.frontend.loadbalancer.healthcheck.timeout=10s"
+      - "traefik.http.services.frontend.loadbalancer.responseforwarding.flushinterval=10ms"
+
+networks:
+  traefik-net:
+    external: true
+  uschedule-net:
+    external: true
