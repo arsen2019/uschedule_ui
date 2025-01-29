@@ -107,8 +107,6 @@ function Schedules() {
     };
 
     const handlePreviousWeek = () => {
-                throw new Error("Something went wrong... 2")
-
         setWeekStartDate((prev) => addDays(prev, -7));
         setWeekIndex(prev => prev - 1)
         refetch();
