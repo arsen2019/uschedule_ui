@@ -15,7 +15,7 @@ ENV GENERATE_SOURCEMAP=true
 
 ARG BUILD_ENV
 RUN npm run $BUILD_ENV
-RUN $SENTRY_AUTH_TOKEN=$(cat .sentry_secret)
+RUN SENTRY_AUTH_TOKEN=$(cat .sentry_secret)
 
 
 RUN sentry-cli login --auth-token $SENTRY_AUTH_TOKEN \
