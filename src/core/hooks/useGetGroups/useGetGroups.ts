@@ -29,7 +29,6 @@ export function useGetGroups(params: IUseGetGroupsParams) {
                 })
 
         },
-        enabled: !storedGroups,
 
     });
     return {groups, isLoading}
