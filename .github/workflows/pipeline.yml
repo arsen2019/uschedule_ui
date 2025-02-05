@@ -30,6 +30,8 @@ jobs:
           tags: |
             ghcr.io/arsen2019/uschedule-ui:latest
             ghcr.io/arsen2019/uschedule-ui:${{ github.sha }}
+          build-args: |
+            SENTRY_AUTH_TOKEN=${{ secrets.SENTRY_AUTH_TOKEN }}
 
   deploy:
     runs-on: ubuntu-latest
