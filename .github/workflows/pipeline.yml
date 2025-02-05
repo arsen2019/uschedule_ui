@@ -32,6 +32,8 @@ jobs:
             ghcr.io/arsen2019/uschedule-ui:${{ github.sha }}
           build-args: |
             SENTRY_AUTH_TOKEN=${{ secrets.SENTRY_AUTH_TOKEN }}
+            REACT_APP_API_URL=${{ secrets.REACT_APP_API_URL }}
+            REACT_APP_GOOGLE_ANALYTICS_ID=${{ secrets.REACT_APP_GOOGLE_ANALYTICS_ID }}
 
   deploy:
     runs-on: ubuntu-latest
