@@ -1,8 +1,8 @@
-import {TLanguage} from "../constants/translations";
+import {TLanguage} from "../../constants/translations";
 import {useMemo} from "react";
 import {useQuery} from "@tanstack/react-query";
-import {Lab} from "../../routes/rootRoute/routes/indexRoute/indexRoute";
-import {api} from "../services/api";
+import {Lab} from "../../../routes/rootRoute/routes/indexRoute/indexRoute";
+import {api} from "../../services/api";
 
 interface IUseGetLabsProps {
     language: TLanguage

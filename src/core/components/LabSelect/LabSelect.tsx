@@ -41,6 +41,7 @@ function LabSelect({labs, isLoading, language, selectedLab, selectedGroupUuid}: 
                 style={{width: '100%'}}
                 options={labs}
                 value={selectedLab ? selectedLab.uuid : undefined}
+                data-testid='lab-select'
             />
         </div>
     );

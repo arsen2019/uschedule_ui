@@ -36,7 +36,7 @@ describe('LabSelect Component', () => {
             />
         );
 
-        const selectElement = screen.getByRole('combobox');
+        const selectElement = screen.getByTestId('lab-select');
         fireEvent.mouseDown(selectElement);
 
         expect(screen.getByText(translations['Lab'][language])).toBeInTheDocument();
