@@ -15,9 +15,11 @@ ENV GENERATE_SOURCEMAP=true
 
 ARG BUILD_ENV
 RUN npm run $BUILD_ENV
+RUN $SENTRY_AUTH_TOKEN=$(cat .sentry_secret)
 
 
-RUN sentry-cli releases files 0.1.12 -p javascript-react --org university-y1 upload-sourcemaps /app/build  --validate
+RUN sentry-cli login --auth-token $SENTRY_AUTH_TOKEN \
+  && sentry-cli releases files 0.1.12 -p javascript-react --org university-y1 upload-sourcemaps /app/build --validate
 
 
 FROM node:19.5.0-alpine
