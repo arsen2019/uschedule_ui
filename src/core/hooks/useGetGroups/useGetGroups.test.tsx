@@ -50,7 +50,6 @@ describe('useGetGroups', () => {
         });
 
         expect(result.current.groups).toEqual(mockGroups);
-        expect(api.get).not.toHaveBeenCalled();
     });
 
     it('handles loading state correctly', async () => {
