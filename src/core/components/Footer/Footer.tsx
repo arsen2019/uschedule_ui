@@ -19,7 +19,7 @@ export const Footer: React.FC = () => {
            target='_blank'
            className='footer_link'>
             <div className='footer' style={footerStyle}>
-                <span style={{fontSize: '17px', marginRight: '10px'}}>Developed by Arsen Grigoryan</span>
+                <span style={{fontSize: '17px', marginRight: '10px'}}>Developed by Arsen Grigoryan!</span>
                 <LinkedinOutlined style={{fontSize: '25px'}} twoToneColor='#1B92B5'/>
             </div>
         </a>
