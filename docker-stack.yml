@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   frontend:
-    image: ghcr.io/arsen2019/uschedule_ui:latest
+    image: ghcr.io/arsen2019/uschedule-ui:${GIT_COMMIT_HASH:-latest}
     deploy:
       update_config:
         order: start-first
@@ -27,4 +27,3 @@ networks:
   traefik-net:
     external: true
   uschedule-net:
-    external: true

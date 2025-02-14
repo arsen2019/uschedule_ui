@@ -30,7 +30,6 @@ export function useGetGroups(params: IUseGetGroupsParams) {
 
         },
 
-
     });
     return {groups, isLoading}
 }

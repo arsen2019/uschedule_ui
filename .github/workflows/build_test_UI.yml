@@ -1,9 +1,11 @@
 
-name: Build and Test UI
+name: Test UI
 
 on:
   push:
-    branches: [ master ]
+    branches:
+      - 'master'
+      - 'docker-stack'
   pull_request:
     branches: [ master ]
 
