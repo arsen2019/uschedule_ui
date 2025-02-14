@@ -1,9 +1,8 @@
 name: pipeline
 on:
  push:
-   branches:
-     - "master"
-     - "docker-stack"
+  tags:
+    - "v*"
 
 permissions:
   packages: write
@@ -30,10 +29,13 @@ jobs:
           tags: |
             ghcr.io/arsen2019/uschedule-ui:latest
             ghcr.io/arsen2019/uschedule-ui:${{ github.sha }}
+            ghcr.io/arsen2019/uschedule-ui:${{ github.ref_name }}
+
           build-args: |
             SENTRY_AUTH_TOKEN=${{ secrets.SENTRY_AUTH_TOKEN }}
             REACT_APP_API_URL=${{ secrets.REACT_APP_API_URL }}
             REACT_APP_GOOGLE_ANALYTICS_ID=${{ secrets.REACT_APP_GOOGLE_ANALYTICS_ID }}
+            
 
   deploy:
     runs-on: ubuntu-latest
