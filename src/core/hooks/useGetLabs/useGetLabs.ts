@@ -4,6 +4,7 @@ import {useQuery} from "@tanstack/react-query";
 import {Lab} from "../../../routes/rootRoute/routes/indexRoute/indexRoute";
 import {api} from "../../services/api";
 
+
 interface IUseGetLabsProps {
     language: TLanguage
 }
@@ -23,6 +24,7 @@ export function useGetLabs(params: IUseGetLabsProps) {
         return [];
     }, [])
     const {data: labs, isFetching} = useQuery<Lab[]>({
+
         queryKey: ['labs', language],
         queryFn: () => {
             return api.get('/groups/labs', {
@@ -31,7 +33,9 @@ export function useGetLabs(params: IUseGetLabsProps) {
                 },
             })
                 .then((response) => {
+
                     localStorage.setItem(LABS_LOCAL_STORAGE_KEY, JSON.stringify(response.data))
+
                     return response.data
                 })
         }

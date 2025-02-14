@@ -27,4 +27,3 @@ networks:
   traefik-net:
     external: true
   uschedule-net:
-    external: true

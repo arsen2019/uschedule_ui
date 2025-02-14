@@ -64,3 +64,4 @@ describe('useGetGroups', () => {
         await waitFor(() => expect(result.current.isLoading).toBe(false));
     });
 });
+
