@@ -2,11 +2,12 @@ import {rootRoute} from "./routes/rootRoute/rootRoute";
 import {indexRoute} from "./routes/rootRoute/routes/indexRoute/indexRoute";
 import {createRouter} from "@tanstack/react-router";
 import {schedulesRoute} from "./routes/rootRoute/routes/schedulesRoute/schedulesRoute";
+import {resumeRoute} from "./routes/rootRoute/routes/resumeRoute/resumeRoute";
 
 const routeTree =
 // TODO: find out why it does not work without @ts-ignore
 // @ts-ignore
-    rootRoute.addChildren([indexRoute, schedulesRoute])
+    rootRoute.addChildren([indexRoute, schedulesRoute, resumeRoute])
 
 export const router = createRouter({ routeTree })
 
