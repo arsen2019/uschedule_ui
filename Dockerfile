@@ -27,8 +27,8 @@ RUN REACT_APP_API_URL=$REACT_APP_API_URL \
 
 
 
-RUN sentry-cli login --auth-token $SENTRY_AUTH_TOKEN \
-  && sentry-cli releases files 0.1.12 -p javascript-react --org university-y1 upload-sourcemaps /app/build --validate
+#RUN sentry-cli login --auth-token $SENTRY_AUTH_TOKEN \
+#  && sentry-cli releases files 0.1.12 -p javascript-react --org university-y1 upload-sourcemaps /app/build --validate
 
 
 FROM node:19.5.0-alpine
