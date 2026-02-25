@@ -4,6 +4,8 @@ import {rootRoute} from "../../rootRoute";
 
 type TimeSlot = "09:00" | "14:00" | "19:00" | "22:00";
 
+
+
 interface DayRecord {
   day: string;
   values: Record<TimeSlot, number | null>;
