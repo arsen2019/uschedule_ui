@@ -115,12 +115,12 @@ function Dashboard () {
   };
 
   const triggerCelebration = () => {
-    const random =
-      GREETINGS[Math.floor(Math.random() * GREETINGS.length)];
+    const random ="Հերս էսօր վերջին օրնա, քեզ վաղը հաջողություն"
+
     setCelebration(random);
     generateConfetti();
 
-    setTimeout(() => setCelebration(null), 3000);
+    setTimeout(() => setCelebration(null), 5000);
   };
 
   const exportCSV = () => {
@@ -172,6 +172,7 @@ function Dashboard () {
         isDayComplete(record)
       ) {
         triggerCelebration();
+
       }
 
       return updated.sort(
@@ -308,6 +309,7 @@ const containerStyle: React.CSSProperties = {
   background: "#f4f6f8",
   padding: "20px",
   fontFamily: "Inter, sans-serif",
+  overflow:'auto'
 };
 
 const cardStyle: React.CSSProperties = {
