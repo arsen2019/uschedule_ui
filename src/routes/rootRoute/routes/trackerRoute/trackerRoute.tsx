@@ -1,416 +1,262 @@
-import React, { useEffect, useState } from "react";
-import {createRoute} from "@tanstack/react-router";
-import {rootRoute} from "../../rootRoute";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { createRoute } from "@tanstack/react-router";
+import { rootRoute } from "../../rootRoute";
+import { DayRecord, normalizeUsername, syncTracker, TIME_SLOTS, TimeSlot } from "./trackerApi";
+import "./trackerRoute.css";
 
-type TimeSlot = "09:00" | "14:00" | "19:00" | "22:00";
+const RECORDS_KEY = "daily-tracker";
+const BACKUP_KEY = "daily-tracker-pre-server-backup";
+const IMPORTED_KEY = "daily-tracker-server-imported-v1";
+const ACTIVE_USERNAME_KEY = "glucose-tracker-active-username";
+const recordsKey = (username: string) => `${RECORDS_KEY}:${username}`;
+const backupKey = (username: string) => `${BACKUP_KEY}:${username}`;
+const importedKey = (username: string) => `${IMPORTED_KEY}:${username}`;
 
-//New tag
-interface DayRecord {
-  day: string;
-  values: Record<TimeSlot, number | null>;
-}
-
-export const trackerRoute = createRoute({
-    getParentRoute: () => rootRoute,
-    path: '/track',
-    component: Dashboard
+const EMPTY_VALUES = (): DayRecord["values"] => ({
+  "09:00": null, "14:00": null, "19:00": null, "22:00": null,
 });
-interface ConfettiPiece {
-  id: number;
-  x: number;
-  y: number;
-  size: number;
-  color: string;
-  duration: number;
-}
 
-const timeSlots: TimeSlot[] = ["09:00", "14:00", "19:00", "22:00"];
-
-const GREETINGS = [
-  "Beautiful consistency 🍸",
-  "Smooth progress today ✨",
-  "Elite discipline 💪",
-  "Momentum is real 🔥",
-  "Strong finish 👏",
+const CHEERS = [
+  "Հրաշալի՛ է, այսօրվա չափումներն ավարտված են։",
+  "Ապրե՛ս, ևս մեկ հետևողական օր։",
+  "Լավ աշխատանք՝ առողջությանդ հետևելը կարևոր քայլ է։",
+  "Այսօրվա բոլոր չափումները գրանցված են։ Շարունակի՛ր նույն ոգով։",
+  "Քո հետևողականությունը մեծ նշանակություն ունի։",
 ];
 
-const getTodayString = () =>
-  new Date().toISOString().split("T")[0];
+const today = () => {
+  const date = new Date();
+  const offset = date.getTimezoneOffset() * 60_000;
+  return new Date(date.getTime() - offset).toISOString().slice(0, 10);
+};
 
-const getDefaultTimeSlot = (): TimeSlot => {
-  const now = new Date();
-  const minutes = now.getHours() * 60 + now.getMinutes();
+export const getAutomaticSlot = (
+  records: DayRecord[],
+  selectedDate: string,
+  now = new Date(),
+): TimeSlot => {
+  const record = records.find(item => item.day === selectedDate);
+  const incomplete = TIME_SLOTS.filter(slot => record?.values[slot] == null);
+  if (incomplete.length === 0) return "22:00";
 
-  const map: Record<TimeSlot, number> = {
-    "09:00": 540,
-    "14:00": 840,
-    "19:00": 1140,
-    "22:00": 1320,
-  };
+  const localToday = new Date(now.getTime() - now.getTimezoneOffset() * 60_000)
+    .toISOString().slice(0, 10);
+  if (selectedDate < localToday) return incomplete[0];
+  if (selectedDate > localToday) return incomplete[0];
 
-  let selected: TimeSlot = "09:00";
-  for (const slot of timeSlots) {
-    if (minutes >= map[slot]) selected = slot;
+  const currentMinutes = now.getHours() * 60 + now.getMinutes();
+  const dueIncomplete = incomplete.find(slot => Number(slot.slice(0, 2)) * 60 <= currentMinutes);
+  return dueIncomplete || incomplete[0];
+};
+
+const loadLocalRecords = (key = RECORDS_KEY): DayRecord[] => {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(key) || "[]");
+    if (!Array.isArray(parsed)) return [];
+    return parsed.filter(item => item?.day && item?.values).map(item => ({
+      day: item.day,
+      values: Object.fromEntries(TIME_SLOTS.map(slot => [slot,
+        typeof item.values[slot] === "number" ? item.values[slot] : null])) as DayRecord["values"],
+    }));
+  } catch {
+    return [];
   }
-  return selected;
 };
 
-const formatDisplayDate = (isoDate: string) => {
-  const date = new Date(isoDate);
-  const day = String(date.getDate()).padStart(2, "0");
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  return `${day}/${month}`;
-};
+const sortRecords = (records: DayRecord[]) =>
+  [...records].sort((a, b) => b.day.localeCompare(a.day));
 
-function Dashboard () {
-  const [records, setRecords] = useState<DayRecord[]>(() => {
-    const saved = localStorage.getItem("daily-tracker");
-    return saved ? JSON.parse(saved) : [];
-  });
+export const trackerRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/track",
+  component: GlucoseTracker,
+});
 
-  const [selectedTime, setSelectedTime] =
-    useState<TimeSlot>(getDefaultTimeSlot());
+function GlucoseTracker() {
+  const [username, setUsername] = useState<string | null>(() => localStorage.getItem(ACTIVE_USERNAME_KEY));
+  const [usernameInput, setUsernameInput] = useState("");
+  const [usernameError, setUsernameError] = useState("");
+  const [records, setRecords] = useState<DayRecord[]>([]);
+  const [selectedDate, setSelectedDate] = useState(today());
+  const selectedDateRef = useRef(selectedDate);
+  selectedDateRef.current = selectedDate;
+  const [selectedTime, setSelectedTime] = useState<TimeSlot>("09:00");
   const [value, setValue] = useState("");
-  const [selectedDate, setSelectedDate] =
-    useState(getTodayString());
+  const [message, setMessage] = useState<string | null>(null);
+  const [syncState, setSyncState] = useState<"syncing" | "synced" | "offline">("syncing");
+  const syncSequence = useRef(Promise.resolve());
+  const syncVersion = useRef(0);
 
-  const [celebration, setCelebration] =
-    useState<string | null>(null);
-  const [confetti, setConfetti] = useState<
-    ConfettiPiece[]
-  >([]);
+  const persistAndSync = useCallback((next: DayRecord[], changedRecord: DayRecord) => {
+    if (!username) return;
+    const sorted = sortRecords(next);
+    localStorage.setItem(recordsKey(username), JSON.stringify(sorted));
+    setSyncState("syncing");
+    const version = ++syncVersion.current;
+    syncSequence.current = syncSequence.current.then(async () => {
+      try {
+        const result = await syncTracker(username, [changedRecord], false);
+        if (result.initial_import_completed) localStorage.setItem(importedKey(username), "true");
+        if (version === syncVersion.current) {
+          localStorage.setItem(recordsKey(username), JSON.stringify(result.records));
+          setRecords(sortRecords(result.records));
+          setSyncState("synced");
+        }
+      } catch {
+        if (version === syncVersion.current) setSyncState("offline");
+      }
+    });
+  }, [username]);
 
   useEffect(() => {
-    localStorage.setItem(
-      "daily-tracker",
-      JSON.stringify(records)
-    );
+    if (!username) return;
+    const hasPerUserStorage = localStorage.getItem(recordsKey(username)) !== null;
+    const localRecords = hasPerUserStorage ? loadLocalRecords(recordsKey(username)) : loadLocalRecords();
+    const sorted = sortRecords(localRecords);
+    const activeDate = selectedDateRef.current;
+    setRecords(sorted);
+    setSelectedTime(getAutomaticSlot(sorted, activeDate));
+
+    const importSequentially = async () => {
+      const needsInitialImport = localStorage.getItem(importedKey(username)) !== "true";
+      if (needsInitialImport && !localStorage.getItem(backupKey(username))) {
+        localStorage.setItem(backupKey(username), JSON.stringify(sorted));
+      }
+      setSyncState("syncing");
+      try {
+        let result;
+        const chronological = [...sorted].reverse();
+        if (!needsInitialImport || chronological.length === 0) {
+          result = await syncTracker(username, [], needsInitialImport);
+        } else {
+          for (let index = 0; index < chronological.length; index += 1) {
+            const isLastDay = index === chronological.length - 1;
+            result = await syncTracker(username, [chronological[index]], needsInitialImport && isLastDay);
+          }
+        }
+        if (result) {
+          localStorage.setItem(recordsKey(username), JSON.stringify(result.records));
+          if (result.initial_import_completed) localStorage.setItem(importedKey(username), "true");
+          setRecords(sortRecords(result.records));
+          setSelectedTime(getAutomaticSlot(result.records, activeDate));
+        }
+        setSyncState("synced");
+      } catch {
+        setSyncState("offline");
+      }
+    };
+    void importSequentially();
+  }, [username]);
+
+  const selectUsername = () => {
+    const normalized = normalizeUsername(usernameInput);
+    if (normalized.length < 2 || normalized.length > 64 || /\s/.test(normalized)) {
+      setUsernameError("Օգտանունը պետք է լինի 2–64 նիշ և բացատներ չպարունակի։");
+      return;
+    }
+    localStorage.setItem(ACTIVE_USERNAME_KEY, normalized);
+    setUsernameError("");
+    setUsername(normalized);
+  };
+
+  const completedToday = useMemo(() => {
+    const record = records.find(item => item.day === today());
+    return record ? TIME_SLOTS.filter(slot => record.values[slot] !== null).length : 0;
   }, [records]);
 
-  const isDayComplete = (record: DayRecord) =>
-    timeSlots.every((slot) => record.values[slot] !== null);
-
-  const generateConfetti = () => {
-    const pieces: ConfettiPiece[] = [];
-
-    for (let i = 0; i < 150; i++) {
-      const angle = Math.random() * 2 * Math.PI;
-      const distance = 200 + Math.random() * 400;
-
-      pieces.push({
-        id: i,
-        x: Math.cos(angle) * distance,
-        y: Math.sin(angle) * distance,
-        size: 6 + Math.random() * 8,
-        color: `hsl(${Math.random() * 360}, 70%, 60%)`,
-        duration: 900 + Math.random() * 600,
-      });
+  const save = () => {
+    const glucose = Number(value);
+    if (!value || !Number.isFinite(glucose) || glucose <= 0) {
+      setMessage("Խնդրում ենք մուտքագրել վավեր դրական արժեք։");
+      return;
     }
 
-    setConfetti(pieces);
-
-    setTimeout(() => {
-      setConfetti([]);
-    }, 2000);
-  };
-
-  const triggerCelebration = () => {
-    const random ="Հերս էսօր վերջին օրնա, քեզ վաղը հաջողություն"
-
-    setCelebration(random);
-    generateConfetti();
-
-    setTimeout(() => setCelebration(null), 5000);
-  };
-
-  const exportCSV = () => {
-    let csv = "Day," + timeSlots.join(",") + "\n";
-    records.forEach((r) => {
-      csv +=
-        r.day +
-        "," +
-        timeSlots.map((t) => r.values[t] ?? "").join(",") +
-        "\n";
-    });
-
-    const blob = new Blob([csv], {
-      type: "text/csv;charset=utf-8;",
-    });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = "daily-tracker.csv";
-    link.click();
-  };
-
-  const handleSubmit = () => {
-    if (!value) return;
-
-    setRecords((prev) => {
-      const updated = [...prev];
-      let record = updated.find(
-        (r) => r.day === selectedDate
-      );
-
-      if (!record) {
-        record = {
-          day: selectedDate,
-          values: {
-            "09:00": null,
-            "14:00": null,
-            "19:00": null,
-            "22:00": null,
-          },
-        };
-        updated.push(record);
-      }
-
-      record.values[selectedTime] = parseFloat(value);
-
-      if (
-        selectedTime === "22:00" &&
-        isDayComplete(record)
-      ) {
-        triggerCelebration();
-
-      }
-
-      return updated.sort(
-        (a, b) =>
-          new Date(b.day).getTime() -
-          new Date(a.day).getTime()
-      );
-    });
-
+    const existing = records.find(item => item.day === selectedDate);
+    const wasComplete = existing ? TIME_SLOTS.every(slot => existing.values[slot] !== null) : false;
+    const next = records.filter(item => item.day !== selectedDate);
+    const updated: DayRecord = {
+      day: selectedDate,
+      values: { ...(existing?.values || EMPTY_VALUES()), [selectedTime]: glucose },
+    };
+    next.push(updated);
+    const sortedNext = sortRecords(next);
+    setRecords(sortedNext);
+    setSelectedTime(getAutomaticSlot(sortedNext, selectedDate));
+    persistAndSync(next, updated);
     setValue("");
+
+    if (!wasComplete && TIME_SLOTS.every(slot => updated.values[slot] !== null)) {
+      setMessage(CHEERS[Math.floor(Math.random() * CHEERS.length)]);
+      window.setTimeout(() => setMessage(null), 5000);
+    }
   };
 
-  return (
-    <div style={containerStyle}>
-      {celebration && (
-        <>
-          <FloatingPopup message={celebration} />
-          {confetti.map((piece) => (
-            <div
-              key={piece.id}
-              style={{
-                position: "fixed",
-                top: "50%",
-                left: "50%",
-                width: piece.size,
-                height: piece.size,
-                background: piece.color,
-                borderRadius: "50%",
-                pointerEvents: "none",
-                transform: `translate(${piece.x}px, ${piece.y}px)`,
-                transition: `transform ${piece.duration}ms ease-out, opacity ${piece.duration}ms`,
-                opacity: 0,
-              }}
-            />
-          ))}
-        </>
-      )}
+  const exportCsv = () => {
+    const rows = ["Date," + TIME_SLOTS.join(","), ...records.map(record =>
+      `${record.day},${TIME_SLOTS.map(slot => record.values[slot] ?? "").join(",")}`)];
+    const url = URL.createObjectURL(new Blob(["\ufeff" + rows.join("\n")], { type: "text/csv;charset=utf-8" }));
+    const link = document.createElement("a");
+    link.href = url; link.download = "glucose-records.csv"; link.click();
+    URL.revokeObjectURL(url);
+  };
 
-      <div style={cardStyle}>
-        <h2 style={titleStyle}>📊 Casual Tracker</h2>
+  if (!username) return <main className="tracker-page tracker-login-page">
+    <section className="tracker-login">
+      <span className="tracker-eyebrow">ԳԼՅՈՒԿՈԶԱՅԻ ՕՐԱԳԻՐ</span>
+      <h1>Մուտքագրեք օգտանունը</h1>
+      <p>Չափումները կպահվեն այս օգտանվան համար։</p>
+      <label className="tracker-field">Օգտանուն
+        <input autoFocus autoComplete="username" value={usernameInput} onChange={event => setUsernameInput(event.target.value)} onKeyDown={event => event.key === "Enter" && selectUsername()} />
+      </label>
+      {usernameError && <div role="alert" className="tracker-login__error">{usernameError}</div>}
+      <button className="tracker-save" onClick={selectUsername}>Շարունակել</button>
+    </section>
+  </main>;
 
-        <div style={inputWrapper}>
-          <input
-            type="date"
-            value={selectedDate}
-            onChange={(e) =>
-              setSelectedDate(e.target.value)
-            }
-            style={inputStyle}
-          />
-
-          <select
-            value={selectedTime}
-            onChange={(e) =>
-              setSelectedTime(
-                e.target.value as TimeSlot
-              )
-            }
-
-            style={selectStyle}
-          >
-            {timeSlots.map((t) => (
-              <option key={t}>{t}</option>
-            ))}
-          </select>
-
-          <input
-            type="number"
-            step="0.01"
-            placeholder="Enter value"
-            value={value}
-            onChange={(e) =>
-              setValue(e.target.value)
-            }
-            onKeyDown={(e) => {
-              if (e.key === "Enter")
-                handleSubmit();
-            }}
-            style={inputStyle}
-          />
-
-          <button
-            onClick={handleSubmit}
-            style={buttonStyle}
-          >
-            Save Entry
-          </button>
-
-          <button
-            onClick={exportCSV}
-            style={exportStyle}
-          >
-            Export CSV
-          </button>
+  return <main className="tracker-page">
+    <section className="tracker-card">
+      <header className="tracker-header">
+        <div><span className="tracker-eyebrow">ԳԼՅՈՒԿՈԶԱՅԻ ՕՐԱԳԻՐ · @{username}</span><h1>Օրվա չափումներ</h1></div>
+        <div className="tracker-account">
+          <span className={`tracker-status tracker-status--${syncState}`}>
+            {syncState === "syncing" ? "Համաժամեցվում է…" : syncState === "synced" ? "Պահված է սերվերում" : "Պահված է սարքում"}
+          </span>
+          <button onClick={() => { localStorage.removeItem(ACTIVE_USERNAME_KEY); setUsername(null); setUsernameInput(""); }}>Փոխել օգտատիրոջը</button>
         </div>
+      </header>
 
-        <table style={tableStyle}>
-          <thead>
-            <tr>
-              <th style={thStyle}>Day</th>
-              {timeSlots.map((t) => (
-                <th key={t} style={thStyle}>
-                  {t}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {records.map((r) => (
-              <tr key={r.day}>
-                <td style={tdStyle}>
-                  {formatDisplayDate(r.day)}
-                </td>
-                {timeSlots.map((t) => (
-                  <td key={t} style={tdStyle}>
-                    {r.values[t] ?? "-"}
-                  </td>
-                ))}
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      <div className="tracker-progress">
+        <strong>Այսօր՝ {completedToday}/4</strong>
+        <div className="tracker-progress__track"><div className="tracker-progress__fill" style={{width: `${completedToday * 25}%`}} /></div>
       </div>
-    </div>
-  );
-};
 
-/* Improved Styles */
-const containerStyle: React.CSSProperties = {
-  minHeight: "100vh",
-  display: "flex",
-  justifyContent: "center",
-  alignItems: "center",
-  background: "#f4f6f8",
-  padding: "20px",
-  fontFamily: "Inter, sans-serif",
-  overflow:'auto'
-};
+      {message && <div role="status" className="tracker-message">🌿 {message}</div>}
 
-const cardStyle: React.CSSProperties = {
-  width: "100%",
-  maxWidth: "600px",
-  background: "#ffffff",
-  padding: "30px",
-  borderRadius: "16px",
-  boxShadow: "0 10px 30px rgba(0,0,0,0.08)",
-  color: "#1f2937",
-};
+      <section className="tracker-entry" aria-labelledby="new-measurement-title">
+        <h2 id="new-measurement-title">Նոր չափում</h2>
+        <label className="tracker-field">Ամսաթիվ<input aria-label="Ամսաթիվ" type="date" value={selectedDate} onChange={e => { const nextDate = e.target.value; setSelectedDate(nextDate); setSelectedTime(getAutomaticSlot(records, nextDate)); }}/></label>
 
-const titleStyle: React.CSSProperties = {
-  textAlign: "center",
-  marginBottom: "25px",
-  color: "#111827",
-};
+        <fieldset className="tracker-slots">
+          <legend>Ժամը</legend>
+          <div className="tracker-slots__grid">
+            {TIME_SLOTS.map(slot => <button type="button" key={slot} aria-pressed={selectedTime === slot} className={selectedTime === slot ? "is-selected" : ""} onClick={() => setSelectedTime(slot)}>{slot}</button>)}
+          </div>
+        </fieldset>
 
-const inputWrapper: React.CSSProperties = {
-  display: "flex",
-  flexDirection: "column",
-  gap: "12px",
-  marginBottom: "25px",
-};
+        <label className="tracker-field tracker-field--value">Գլյուկոզա (mmol/L)
+          <input aria-label="Գլյուկոզա" type="number" min="0.1" step="0.1" inputMode="decimal" placeholder="օր.՝ 6.2" value={value} onChange={e => setValue(e.target.value)} onKeyDown={e => e.key === "Enter" && save()}/>
+        </label>
+        <button className="tracker-save" onClick={save}>Գրանցել չափումը</button>
+      </section>
 
-const inputStyle: React.CSSProperties = {
-  padding: "12px",
-  borderRadius: "8px",
-  border: "1px solid #d1d5db",
-  fontSize: "15px",
-  color: "#111827",
-  background: "#ffffff",
-};
+      <div className="tracker-history-header"><h2>Պատմություն</h2><button onClick={exportCsv}>Ներբեռնել CSV</button></div>
+      <div className="tracker-history-mobile">{records.map(record => <article className="tracker-day" key={record.day}>
+        <h3>{record.day.split("-").reverse().join("/")}</h3>
+        <div>{TIME_SLOTS.map(slot => <div className={record.values[slot] !== null ? "has-value" : ""} key={slot}><span>{slot}</span><strong>{record.values[slot] ?? "—"}</strong></div>)}</div>
+      </article>)}</div>
+      <div className="tracker-table-wrap"><table><thead><tr><th>Ամսաթիվ</th>{TIME_SLOTS.map(slot => <th key={slot}>{slot}</th>)}</tr></thead><tbody>{records.map(record => <tr key={record.day}><td>{record.day.split("-").reverse().join("/")}</td>{TIME_SLOTS.map(slot => <td key={slot}>{record.values[slot] ?? "—"}</td>)}</tr>)}</tbody></table></div>
+    </section>
+  </main>;
+}
 
-const selectStyle: React.CSSProperties = {
-  ...inputStyle,
-  color:"black",
-};
-
-const buttonStyle: React.CSSProperties = {
-  padding: "12px",
-  borderRadius: "8px",
-  background: "#2563eb",
-  color: "white",
-  border: "none",
-  cursor: "pointer",
-  fontWeight: 500,
-};
-
-const exportStyle: React.CSSProperties = {
-  padding: "12px",
-  borderRadius: "8px",
-  background: "#10b981",
-  color: "white",
-  border: "none",
-  cursor: "pointer",
-  fontWeight: 500,
-};
-
-const tableStyle: React.CSSProperties = {
-  width: "100%",
-  borderCollapse: "collapse",
-  background: "#ffffff",
-  color:"gray"
-};
-
-const thStyle: React.CSSProperties = {
-  padding: "12px",
-  background: "#f3f4f6",
-  borderBottom: "2px solid #e5e7eb",
-  color: "#374151",
-};
-
-const tdStyle: React.CSSProperties = {
-  padding: "12px",
-  textAlign: "center",
-  borderBottom: "1px solid #e5e7eb",
-  color: "#111827",
-};
-
-
-
-
-const FloatingPopup = ({
-  message,
-}: {
-  message: string;
-}) => (
-  <div
-    style={{
-      position: "fixed",
-      top: "15%",
-      background: "#7aa6a1",
-      color: "white",
-      padding: "18px 28px",
-      borderRadius: "20px",
-      fontWeight: 600,
-    }}
-  >
-    🎉 {message}
-  </div>
-);
-
-export default Dashboard;
+export default GlucoseTracker;

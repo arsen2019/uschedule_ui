@@ -1,0 +1,83 @@
+.tracker-admin-page { min-height: 100vh; background: #f4f7f6; color: #18362d; font-family: Inter, system-ui, sans-serif; }
+.tracker-admin-topbar { display: flex; justify-content: space-between; align-items: center; gap: 20px; padding: 20px clamp(18px, 4vw, 48px); border-bottom: 1px solid #dae6e1; background: #fff; }
+.tracker-admin-topbar span, .tracker-admin-user-heading span { color: #20805f; font-size: 11px; font-weight: 800; letter-spacing: 1.4px; }
+.tracker-admin-topbar h1 { margin: 3px 0 0; font-size: 24px; }
+.tracker-admin-topbar > button, .tracker-admin-user-heading button { min-height: 40px; padding: 8px 13px; border: 1px solid #c9d9d3; border-radius: 10px; background: #fff; color: #38584d; font-weight: 700; cursor: pointer; }
+.tracker-admin-layout { display: grid; grid-template-columns: 240px minmax(0, 1fr); min-height: calc(100vh - 85px); }
+.tracker-admin-users { padding: 24px 16px; border-right: 1px solid #dbe6e2; background: #fbfdfc; }
+.tracker-admin-users > div { display: flex; justify-content: space-between; align-items: center; }
+.tracker-admin-users h2 { margin: 0; font-size: 18px; }
+.tracker-admin-users > div > span { display: grid; place-items: center; min-width: 27px; height: 27px; border-radius: 20px; background: #e3f2ec; color: #176548; font-weight: 800; }
+.tracker-admin-users > input { box-sizing: border-box; width: 100%; min-height: 43px; margin: 16px 0 12px; padding: 9px 11px; border: 1px solid #cadbd4; border-radius: 10px; background: #fff; font-size: 14px; }
+.tracker-admin-users nav { display: grid; gap: 7px; }
+.tracker-admin-users nav button { display: grid; gap: 3px; width: 100%; padding: 11px; border: 1px solid transparent; border-radius: 11px; background: transparent; color: #26483d; text-align: left; cursor: pointer; }
+.tracker-admin-users nav button span { color: #6a8078; font-size: 11px; }
+.tracker-admin-users nav button.is-active { border-color: #b9dacc; background: #eaf6f1; }
+.tracker-admin-users nav p { color: #6a8078; font-size: 13px; }
+.tracker-admin-content { min-width: 0; padding: clamp(18px, 3vw, 36px); }
+.tracker-admin-user-heading { display: flex; justify-content: space-between; align-items: center; }
+.tracker-admin-user-heading h2 { margin: 3px 0 0; font-size: 27px; }
+.tracker-admin-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin: 22px 0; }
+.tracker-admin-stats article { display: grid; gap: 7px; min-width: 0; padding: 17px; border: 1px solid #dce7e3; border-radius: 14px; background: #fff; }
+.tracker-admin-stats span { color: #6a7d76; font-size: 12px; }
+.tracker-admin-stats strong { overflow: hidden; font-size: 19px; text-overflow: ellipsis; }
+.tracker-admin-panel { margin-bottom: 18px; padding: 20px; border: 1px solid #dce7e3; border-radius: 17px; background: #fff; box-shadow: 0 6px 25px rgba(30,70,57,.04); }
+.tracker-admin-range-top { display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; }
+.tracker-admin-tabs { display: flex; gap: 4px; padding: 4px; border-radius: 11px; background: #eef4f1; }
+.tracker-admin-tabs button { min-height: 38px; padding: 7px 12px; border: 0; border-radius: 8px; background: transparent; color: #526b62; font-weight: 700; cursor: pointer; }
+.tracker-admin-tabs button.is-active { background: #fff; color: #176548; box-shadow: 0 2px 8px rgba(30,70,57,.1); }
+.tracker-admin-navigator { display: flex; align-items: center; gap: 6px; }
+.tracker-admin-navigator > button { width: 39px; height: 39px; border: 1px solid #cadbd4; border-radius: 9px; background: #fff; color: #176548; font-size: 24px; cursor: pointer; }
+.tracker-admin-navigator label { position: relative; min-width: 190px; text-align: center; }
+.tracker-admin-navigator label span { font-size: 13px; font-weight: 750; }
+.tracker-admin-navigator input { position: absolute; inset: 0; width: 100%; opacity: 0; cursor: pointer; }
+.tracker-admin-chart { width: 100%; height: 390px; margin-top: 20px; }
+.tracker-admin-placeholder { display: grid; place-items: center; height: 100%; border-radius: 12px; background: #f7faf9; color: #71837c; }
+.admin-tooltip { display: grid; gap: 4px; padding: 11px 13px; border: 1px solid #cdded7; border-radius: 10px; background: rgba(255,255,255,.97); box-shadow: 0 8px 25px rgba(20,60,48,.13); font-size: 12px; }
+.admin-tooltip span { color: #526b62; }
+.tracker-admin-error { display: flex; justify-content: space-between; gap: 12px; margin-top: 16px; padding: 12px; border-radius: 10px; background: #fff1f0; color: #a61b13; }
+.tracker-admin-error button { border: 0; background: transparent; color: inherit; font-weight: 800; cursor: pointer; }
+.tracker-admin-records > div:first-child { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.tracker-admin-records h3 { margin: 0; }
+.tracker-admin-records > div > span { color: #6a7d76; font-size: 12px; }
+.tracker-admin-table-wrap { overflow-x: auto; margin-top: 14px; }
+.tracker-admin-table-wrap table { width: 100%; min-width: 660px; border-collapse: collapse; }
+.tracker-admin-table-wrap th { padding: 11px; border-bottom: 2px solid #dce7e3; background: #f4f8f6; font-size: 12px; text-align: left; }
+.tracker-admin-table-wrap td { padding: 12px 11px; border-bottom: 1px solid #e7eeeb; font-size: 13px; font-variant-numeric: tabular-nums; }
+.tracker-admin-table-wrap > p { color: #71837c; text-align: center; }
+.tracker-admin-empty { display: grid; place-items: center; min-height: 50vh; text-align: center; }
+.tracker-admin-empty h2 { margin-bottom: 4px; }
+.tracker-admin-empty p { color: #71837c; }
+.tracker-admin-login-page { display: grid; place-items: center; padding: 18px; }
+.tracker-admin-login { box-sizing: border-box; width: 100%; max-width: 430px; padding: 30px; border: 1px solid #dae6e1; border-radius: 20px; background: #fff; box-shadow: 0 18px 55px rgba(25,65,52,.1); }
+.tracker-admin-login > span { color: #20805f; font-size: 11px; font-weight: 800; letter-spacing: 1.4px; }
+.tracker-admin-login h1 { margin: 5px 0 8px; font-size: 29px; }
+.tracker-admin-login p { margin: 0 0 24px; color: #63776f; line-height: 1.5; }
+.tracker-admin-login label { display: grid; gap: 7px; font-size: 13px; font-weight: 750; }
+.tracker-admin-login input { min-height: 49px; padding: 0 13px; border: 1px solid #bfd2ca; border-radius: 11px; font-size: 16px; }
+.tracker-admin-login div[role="alert"] { margin-top: 10px; color: #b42318; font-size: 13px; font-weight: 700; }
+.tracker-admin-login > button { width: 100%; min-height: 49px; margin-top: 18px; border: 0; border-radius: 11px; background: #20805f; color: #fff; font-weight: 800; cursor: pointer; }
+.tracker-admin-login > button:disabled { opacity: .55; cursor: not-allowed; }
+
+@media (max-width: 850px) {
+  .tracker-admin-layout { grid-template-columns: 1fr; }
+  .tracker-admin-users { border-right: 0; border-bottom: 1px solid #dbe6e2; }
+  .tracker-admin-users nav { display: flex; overflow-x: auto; padding-bottom: 3px; }
+  .tracker-admin-users nav button { min-width: 155px; }
+  .tracker-admin-stats { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 560px) {
+  .tracker-admin-topbar { padding: 16px; }
+  .tracker-admin-topbar h1 { font-size: 20px; }
+  .tracker-admin-content { padding: 16px 12px; }
+  .tracker-admin-stats { gap: 8px; }
+  .tracker-admin-stats article { padding: 13px; }
+  .tracker-admin-stats strong { font-size: 15px; }
+  .tracker-admin-panel { padding: 14px; }
+  .tracker-admin-tabs { width: 100%; }
+  .tracker-admin-tabs button { flex: 1; padding-inline: 5px; }
+  .tracker-admin-navigator { width: 100%; justify-content: space-between; }
+  .tracker-admin-navigator label { min-width: 0; flex: 1; }
+  .tracker-admin-chart { height: 310px; }
+}
