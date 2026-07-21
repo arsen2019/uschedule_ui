@@ -27,10 +27,11 @@
 .tracker-progress__fill { height: 100%; background: #2b9974; transition: width .3s; }
 .tracker-message { margin-bottom: 18px; padding: 14px; border-radius: 12px; background: #e8f7ef; color: #146044; font-weight: 700; line-height: 1.45; }
 
-.tracker-entry { display: grid; gap: 17px; margin: 0 -4px 32px; padding: 18px; border: 1px solid #dfebe6; border-radius: 18px; background: #fbfdfc; }
+.tracker-entry { display: grid; gap: 17px; min-width: 0; margin: 0 -4px 32px; padding: 18px; border: 1px solid #dfebe6; border-radius: 18px; background: #fbfdfc; overflow: hidden; }
 .tracker-entry h2 { margin: 0; font-size: 19px; }
-.tracker-field { display: grid; gap: 7px; font-size: 13px; font-weight: 750; }
-.tracker-field input { box-sizing: border-box; width: 100%; min-height: 52px; padding: 12px 14px; border: 1px solid #b9cec6; border-radius: 12px; background: #fff; color: #17352d; font-size: 16px; }
+.tracker-field { display: grid; min-width: 0; max-width: 100%; gap: 7px; font-size: 13px; font-weight: 750; }
+.tracker-field input { box-sizing: border-box; display: block; width: 100%; min-width: 0; max-width: 100%; min-height: 52px; padding: 12px 14px; border: 1px solid #b9cec6; border-radius: 12px; background: #fff; color: #17352d; font-size: 16px; }
+.tracker-field input[type="date"] { appearance: none; -webkit-appearance: none; }
 .tracker-field--value input { font-size: 21px; font-weight: 700; }
 .tracker-field input:focus { outline: 3px solid rgba(32,128,95,.18); border-color: #20805f; }
 .tracker-slots { min-width: 0; margin: 0; padding: 0; border: 0; }

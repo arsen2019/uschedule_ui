@@ -7,10 +7,13 @@ import "./trackerRoute.css";
 const RECORDS_KEY = "daily-tracker";
 const BACKUP_KEY = "daily-tracker-pre-server-backup";
 const IMPORTED_KEY = "daily-tracker-server-imported-v1";
+const RECONCILED_KEY = "daily-tracker-username-reconciled-v2";
 const ACTIVE_USERNAME_KEY = "glucose-tracker-active-username";
 const recordsKey = (username: string) => `${RECORDS_KEY}:${username}`;
 const backupKey = (username: string) => `${BACKUP_KEY}:${username}`;
 const importedKey = (username: string) => `${IMPORTED_KEY}:${username}`;
+const reconciledKey = (username: string) => `${RECONCILED_KEY}:${username}`;
+const dirtyKey = (username: string) => `daily-tracker-dirty-days:${username}`;
 
 const EMPTY_VALUES = (): DayRecord["values"] => ({
   "09:00": null, "14:00": null, "19:00": null, "22:00": null,
@@ -66,6 +69,28 @@ const loadLocalRecords = (key = RECORDS_KEY): DayRecord[] => {
 const sortRecords = (records: DayRecord[]) =>
   [...records].sort((a, b) => b.day.localeCompare(a.day));
 
+export const mergeRecords = (...sources: DayRecord[][]) => {
+  const merged = new Map<string, DayRecord>();
+  sources.forEach(source => source.forEach(record => {
+    const current = merged.get(record.day) || { day: record.day, values: EMPTY_VALUES() };
+    TIME_SLOTS.forEach(slot => {
+      if (record.values[slot] !== null) current.values[slot] = record.values[slot];
+    });
+    merged.set(record.day, current);
+  }));
+  return sortRecords(Array.from(merged.values()));
+};
+
+const loadDirtyDays = (username: string): string[] => {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(dirtyKey(username)) || "[]");
+    return Array.isArray(parsed) ? parsed.filter(day => typeof day === "string") : [];
+  } catch { return []; }
+};
+
+const saveDirtyDays = (username: string, days: string[]) =>
+  localStorage.setItem(dirtyKey(username), JSON.stringify(Array.from(new Set(days))));
+
 export const trackerRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/track",
@@ -91,6 +116,7 @@ function GlucoseTracker() {
     if (!username) return;
     const sorted = sortRecords(next);
     localStorage.setItem(recordsKey(username), JSON.stringify(sorted));
+    saveDirtyDays(username, [...loadDirtyDays(username), changedRecord.day]);
     setSyncState("syncing");
     const version = ++syncVersion.current;
     syncSequence.current = syncSequence.current.then(async () => {
@@ -98,6 +124,7 @@ function GlucoseTracker() {
         const result = await syncTracker(username, [changedRecord], false);
         if (result.initial_import_completed) localStorage.setItem(importedKey(username), "true");
         if (version === syncVersion.current) {
+          saveDirtyDays(username, loadDirtyDays(username).filter(day => day !== changedRecord.day));
           localStorage.setItem(recordsKey(username), JSON.stringify(result.records));
           setRecords(sortRecords(result.records));
           setSyncState("synced");
@@ -110,36 +137,40 @@ function GlucoseTracker() {
 
   useEffect(() => {
     if (!username) return;
-    const hasPerUserStorage = localStorage.getItem(recordsKey(username)) !== null;
-    const localRecords = hasPerUserStorage ? loadLocalRecords(recordsKey(username)) : loadLocalRecords();
-    const sorted = sortRecords(localRecords);
+    const legacyRecords = loadLocalRecords();
+    const perUserRecords = loadLocalRecords(recordsKey(username));
+    const sorted = mergeRecords(legacyRecords, perUserRecords);
     const activeDate = selectedDateRef.current;
     setRecords(sorted);
     setSelectedTime(getAutomaticSlot(sorted, activeDate));
 
     const importSequentially = async () => {
-      const needsInitialImport = localStorage.getItem(importedKey(username)) !== "true";
-      if (needsInitialImport && !localStorage.getItem(backupKey(username))) {
+      const needsReconciliation = localStorage.getItem(reconciledKey(username)) !== "true";
+      if (needsReconciliation && !localStorage.getItem(backupKey(username))) {
         localStorage.setItem(backupKey(username), JSON.stringify(sorted));
       }
       setSyncState("syncing");
       try {
-        let result;
-        const chronological = [...sorted].reverse();
-        if (!needsInitialImport || chronological.length === 0) {
-          result = await syncTracker(username, [], needsInitialImport);
-        } else {
-          for (let index = 0; index < chronological.length; index += 1) {
-            const isLastDay = index === chronological.length - 1;
-            result = await syncTracker(username, [chronological[index]], needsInitialImport && isLastDay);
-          }
+        let result = await syncTracker(username, [], false);
+        const reconciled = mergeRecords(result.records, legacyRecords, perUserRecords);
+        const dirtyDays = new Set(loadDirtyDays(username));
+        const recordsToUpload = needsReconciliation
+          ? [...reconciled].reverse()
+          : [...reconciled].reverse().filter(record => dirtyDays.has(record.day));
+
+        for (let index = 0; index < recordsToUpload.length; index += 1) {
+          const isLastDay = index === recordsToUpload.length - 1;
+          result = await syncTracker(username, [recordsToUpload[index]], needsReconciliation && isLastDay);
         }
-        if (result) {
-          localStorage.setItem(recordsKey(username), JSON.stringify(result.records));
-          if (result.initial_import_completed) localStorage.setItem(importedKey(username), "true");
-          setRecords(sortRecords(result.records));
-          setSelectedTime(getAutomaticSlot(result.records, activeDate));
+        if (needsReconciliation && recordsToUpload.length === 0) {
+          result = await syncTracker(username, [], true);
         }
+        localStorage.setItem(recordsKey(username), JSON.stringify(result.records));
+        localStorage.setItem(reconciledKey(username), "true");
+        if (result.initial_import_completed) localStorage.setItem(importedKey(username), "true");
+        saveDirtyDays(username, []);
+        setRecords(sortRecords(result.records));
+        setSelectedTime(getAutomaticSlot(result.records, activeDate));
         setSyncState("synced");
       } catch {
         setSyncState("offline");

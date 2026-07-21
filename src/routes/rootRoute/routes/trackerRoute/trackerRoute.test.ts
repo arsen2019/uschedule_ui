@@ -1,4 +1,4 @@
-import { getAutomaticSlot } from "./trackerRoute";
+import { getAutomaticSlot, mergeRecords } from "./trackerRoute";
 import { DayRecord } from "./trackerApi";
 
 const record = (values: DayRecord["values"]): DayRecord => ({ day: "2026-07-21", values });
@@ -27,5 +27,19 @@ describe("getAutomaticSlot", () => {
 
   test("uses 22:00 when the day is complete", () => {
     expect(getAutomaticSlot([record({ "09:00": 6.1, "14:00": 6.2, "19:00": 6.4, "22:00": 6.0 })], "2026-07-21", nowAt(23))).toBe("22:00");
+  });
+});
+
+describe("mergeRecords", () => {
+  test("unions missing date ranges and does not let null erase a real reading", () => {
+    const server: DayRecord[] = [record({ "09:00": 6.1, "14:00": null, "19:00": null, "22:00": null })];
+    const local: DayRecord[] = [
+      { day: "2026-07-21", values: { "09:00": null, "14:00": 7.2, "19:00": null, "22:00": null } },
+      { day: "2026-07-22", values: { "09:00": 5.9, "14:00": null, "19:00": null, "22:00": null } },
+    ];
+    expect(mergeRecords(server, local)).toEqual([
+      local[1],
+      { day: "2026-07-21", values: { "09:00": 6.1, "14:00": 7.2, "19:00": null, "22:00": null } },
+    ]);
   });
 });
