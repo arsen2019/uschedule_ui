@@ -5,7 +5,7 @@ import {
 } from "recharts";
 import { rootRoute } from "../../rootRoute";
 import { DayRecord, TIME_SLOTS } from "../trackerRoute/trackerApi";
-import { adminErrorMessage, AdminTrackerUser, getAdminRecords, getAdminUsers } from "./trackerAdminApi";
+import { adminErrorMessage, AdminTrackerUser, deleteAdminRecord, getAdminRecords, getAdminUsers, patchAdminRecord } from "./trackerAdminApi";
 import {
   aggregateRecords, formatIsoDate, getCalendarRange, moveCalendarRange, parseIsoDate,
   periodLabel, RangeMode,
@@ -43,6 +43,10 @@ function TrackerAdminDashboard() {
   const [mode, setMode] = useState<RangeMode>("week");
   const [anchor, setAnchor] = useState(() => new Date());
   const [records, setRecords] = useState<DayRecord[]>([]);
+  const [previousRecords, setPreviousRecords] = useState<DayRecord[]>([]);
+  const [editDate, setEditDate] = useState(() => formatIsoDate(new Date()));
+  const [editValues, setEditValues] = useState<Record<string, string>>(() => Object.fromEntries(TIME_SLOTS.map(slot => [slot, ""])));
+  const [savingRecord, setSavingRecord] = useState(false);
   const [loadingUsers, setLoadingUsers] = useState(false);
   const [loadingRecords, setLoadingRecords] = useState(false);
   const [loginError, setLoginError] = useState("");
@@ -79,14 +83,20 @@ function TrackerAdminDashboard() {
     setLoadingRecords(true);
     setDataError("");
     try {
-      setRecords(await getAdminRecords(token, selectedUsername, range.dateFrom, range.dateTo));
+      const previousRange = getCalendarRange(mode, moveCalendarRange(mode, anchor, -1));
+      const [current, previous] = await Promise.all([
+        getAdminRecords(token, selectedUsername, range.dateFrom, range.dateTo),
+        getAdminRecords(token, selectedUsername, previousRange.dateFrom, previousRange.dateTo),
+      ]);
+      setRecords(current);
+      setPreviousRecords(previous);
     } catch (error) {
       setDataError(adminErrorMessage(error));
       setRecords([]);
     } finally {
       setLoadingRecords(false);
     }
-  }, [authenticated, range.dateFrom, range.dateTo, selectedUsername, token]);
+  }, [authenticated, range.dateFrom, range.dateTo, selectedUsername, token, mode, anchor]);
 
   useEffect(() => { void loadRecords(); }, [loadRecords]);
 
@@ -99,6 +109,50 @@ function TrackerAdminDashboard() {
   const filteredUsers = users.filter(user => user.username.toLowerCase().includes(search.toLowerCase()));
   const chartData = useMemo(() => aggregateRecords(records, mode, anchor), [records, mode, anchor]);
   const hasChartValues = chartData.some(point => point.value !== null);
+  const periodAverage = (items: DayRecord[]) => {
+    const values = items.flatMap(record => TIME_SLOTS.map(slot => record.values[slot]).filter((item): item is number => item !== null));
+    return values.length ? values.reduce((sum, item) => sum + item, 0) / values.length : null;
+  };
+  const currentAverage = periodAverage(records);
+  const previousAverage = periodAverage(previousRecords);
+  const trendPercent = currentAverage !== null && previousAverage
+    ? ((currentAverage - previousAverage) / previousAverage) * 100
+    : null;
+
+  const editRecord = (record?: DayRecord) => {
+    const day = record?.day || formatIsoDate(new Date());
+    setEditDate(day);
+    setEditValues(Object.fromEntries(TIME_SLOTS.map(slot => [slot, record?.values[slot]?.toString() || ""])));
+  };
+
+  const saveEditedRecord = async () => {
+    if (!selectedUsername || !editDate) return;
+    setSavingRecord(true); setDataError("");
+    try {
+      const values = Object.fromEntries(TIME_SLOTS.map(slot => {
+        const raw = editValues[slot]?.trim();
+        return [slot, raw ? Number(raw) : null];
+      })) as DayRecord["values"];
+      if (TIME_SLOTS.some(slot => values[slot] !== null && (!Number.isFinite(values[slot]) || values[slot]! <= 0))) {
+        setDataError("Measurements must be positive numbers or blank.");
+        return;
+      }
+      await patchAdminRecord(token, selectedUsername, editDate, values);
+      await Promise.all([loadRecords(), loadUsers(token)]);
+    } catch (error) { setDataError(adminErrorMessage(error)); }
+    finally { setSavingRecord(false); }
+  };
+
+  const removeRecord = async (day: string) => {
+    if (!selectedUsername || !window.confirm(`Delete every measurement for ${day}?`)) return;
+    setSavingRecord(true); setDataError("");
+    try {
+      await deleteAdminRecord(token, selectedUsername, day);
+      if (editDate === day) editRecord();
+      await Promise.all([loadRecords(), loadUsers(token)]);
+    } catch (error) { setDataError(adminErrorMessage(error)); }
+    finally { setSavingRecord(false); }
+  };
 
   if (!authenticated) return <main className="tracker-admin-page tracker-admin-login-page">
     <section className="tracker-admin-login">
@@ -149,6 +203,11 @@ function TrackerAdminDashboard() {
               </div>
             </div>
 
+            <div className={`tracker-admin-trend ${trendPercent === null ? "is-neutral" : trendPercent > 0 ? "is-up" : trendPercent < 0 ? "is-down" : "is-neutral"}`}>
+              <strong>{trendPercent === null ? "—" : `${trendPercent > 0 ? "+" : ""}${trendPercent.toFixed(1)}%`}</strong>
+              <span>average glucose vs previous {mode}</span>
+            </div>
+
             {dataError && <div className="tracker-admin-error" role="alert"><span>{dataError}</span><button onClick={loadRecords}>Retry</button></div>}
             <div className="tracker-admin-chart" aria-label={`Glucose ${mode} chart`}>
               {loadingRecords ? <div className="tracker-admin-placeholder">Loading glucose records…</div> : !hasChartValues ? <div className="tracker-admin-placeholder">No glucose values in this period.</div> : <ResponsiveContainer width="100%" height="100%">
@@ -164,9 +223,19 @@ function TrackerAdminDashboard() {
             </div>
           </section>
 
+          <section className="tracker-admin-panel tracker-admin-editor">
+            <div className="tracker-admin-editor__heading"><div><h3>Add or correct a record</h3><span>Leave a measurement blank to clear that slot.</span></div><button onClick={() => editRecord()}>New date</button></div>
+            <div className="tracker-admin-editor__form">
+              <label>Date<input type="date" value={editDate} onChange={event => setEditDate(event.target.value)} /></label>
+              {TIME_SLOTS.map(slot => <label key={slot}>{slot}<input type="number" min="0.1" step="0.1" inputMode="decimal" placeholder="—" value={editValues[slot]} onChange={event => setEditValues(current => ({ ...current, [slot]: event.target.value }))} /></label>)}
+              <button disabled={savingRecord} onClick={saveEditedRecord}>{savingRecord ? "Saving…" : "Save record"}</button>
+              {records.some(record => record.day === editDate) && <button className="is-danger" disabled={savingRecord} onClick={() => removeRecord(editDate)}>Delete day</button>}
+            </div>
+          </section>
+
           <section className="tracker-admin-panel tracker-admin-records">
             <div><h3>Records</h3><span>{range.dateFrom} to {range.dateTo}</span></div>
-            <div className="tracker-admin-table-wrap"><table><thead><tr><th>Date</th>{TIME_SLOTS.map(slot => <th key={slot}>{slot}</th>)}</tr></thead><tbody>{records.map(record => <tr key={record.day}><td>{record.day}</td>{TIME_SLOTS.map(slot => <td key={slot}>{record.values[slot] === null ? "—" : `${record.values[slot]} mmol/L`}</td>)}</tr>)}</tbody></table>{!loadingRecords && !records.length && <p>No records in this period.</p>}</div>
+            <div className="tracker-admin-table-wrap"><table><thead><tr><th>Date</th>{TIME_SLOTS.map(slot => <th key={slot}>{slot}</th>)}<th>Actions</th></tr></thead><tbody>{records.map(record => <tr key={record.day}><td>{record.day}</td>{TIME_SLOTS.map(slot => <td key={slot}>{record.values[slot] === null ? "—" : `${record.values[slot]} mmol/L`}</td>)}<td><div className="tracker-admin-row-actions"><button onClick={() => editRecord(record)}>Edit</button><button className="is-danger" onClick={() => removeRecord(record.day)}>Delete</button></div></td></tr>)}</tbody></table>{!loadingRecords && !records.length && <p>No records in this period.</p>}</div>
           </section>
         </>}
       </section>

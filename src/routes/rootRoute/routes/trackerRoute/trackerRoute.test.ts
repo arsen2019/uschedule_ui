@@ -1,4 +1,4 @@
-import { getAutomaticSlot, mergeRecords } from "./trackerRoute";
+import { getAutomaticSlot, mergeRecords, selectRecordsToUpload } from "./trackerRoute";
 import { DayRecord } from "./trackerApi";
 
 const record = (values: DayRecord["values"]): DayRecord => ({ day: "2026-07-21", values });
@@ -41,5 +41,19 @@ describe("mergeRecords", () => {
       local[1],
       { day: "2026-07-21", values: { "09:00": 6.1, "14:00": 7.2, "19:00": null, "22:00": null } },
     ]);
+  });
+
+  test("full sync uploads missing server days without overwriting existing cleaned days", () => {
+    const server = [record({ "09:00": null, "14:00": null, "19:00": null, "22:00": null })];
+    const local = [
+      server[0],
+      { day: "2026-07-22", values: { "09:00": 5.9, "14:00": null, "19:00": null, "22:00": null } },
+    ];
+    expect(selectRecordsToUpload(server, local, [], true).map(item => item.day)).toEqual(["2026-07-22"]);
+  });
+
+  test("dirty offline edits are uploaded even when the server day exists", () => {
+    const server = [record({ "09:00": 6.1, "14:00": null, "19:00": null, "22:00": null })];
+    expect(selectRecordsToUpload(server, server, ["2026-07-21"], false)).toHaveLength(1);
   });
 });

@@ -33,6 +33,26 @@ export const getAdminRecords = async (
   return response.data;
 };
 
+export const patchAdminRecord = async (
+  token: string,
+  username: string,
+  day: string,
+  values: DayRecord["values"],
+) => {
+  const response = await api.patch<DayRecord>(
+    `/tracker/admin/users/${encodeURIComponent(username)}/records/${day}`,
+    values,
+    { headers: adminHeaders(token) },
+  );
+  return response.data;
+};
+
+export const deleteAdminRecord = async (token: string, username: string, day: string) => {
+  await api.delete(`/tracker/admin/users/${encodeURIComponent(username)}/records/${day}`, {
+    headers: adminHeaders(token),
+  });
+};
+
 export const adminErrorMessage = (error: unknown) => {
   if (!axios.isAxiosError(error) || !error.response) return "The backend is unavailable. Check the server and try again.";
   if (error.response.status === 401) return "The admin secret is incorrect.";

@@ -32,6 +32,11 @@
 .tracker-admin-navigator label span { font-size: 13px; font-weight: 750; }
 .tracker-admin-navigator input { position: absolute; inset: 0; width: 100%; opacity: 0; cursor: pointer; }
 .tracker-admin-chart { width: 100%; height: 390px; margin-top: 20px; }
+.tracker-admin-trend { display: flex; align-items: baseline; gap: 8px; width: fit-content; margin-top: 16px; padding: 8px 11px; border-radius: 10px; background: #eef4f1; }
+.tracker-admin-trend strong { font-size: 18px; }
+.tracker-admin-trend span { color: #657970; font-size: 12px; }
+.tracker-admin-trend.is-up { background: #fff1f0; color: #b42318; }
+.tracker-admin-trend.is-down { background: #eaf6f1; color: #176548; }
 .tracker-admin-placeholder { display: grid; place-items: center; height: 100%; border-radius: 12px; background: #f7faf9; color: #71837c; }
 .admin-tooltip { display: grid; gap: 4px; padding: 11px 13px; border: 1px solid #cdded7; border-radius: 10px; background: rgba(255,255,255,.97); box-shadow: 0 8px 25px rgba(20,60,48,.13); font-size: 12px; }
 .admin-tooltip span { color: #526b62; }
@@ -45,6 +50,17 @@
 .tracker-admin-table-wrap th { padding: 11px; border-bottom: 2px solid #dce7e3; background: #f4f8f6; font-size: 12px; text-align: left; }
 .tracker-admin-table-wrap td { padding: 12px 11px; border-bottom: 1px solid #e7eeeb; font-size: 13px; font-variant-numeric: tabular-nums; }
 .tracker-admin-table-wrap > p { color: #71837c; text-align: center; }
+.tracker-admin-editor__heading { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.tracker-admin-editor__heading h3 { margin: 0 0 4px; }
+.tracker-admin-editor__heading span { color: #6a7d76; font-size: 12px; }
+.tracker-admin-editor__heading > button { min-height: 38px; padding: 7px 11px; border: 1px solid #c9d9d3; border-radius: 9px; background: #fff; color: #38584d; font-weight: 700; cursor: pointer; }
+.tracker-admin-editor__form { display: grid; grid-template-columns: repeat(5, minmax(100px, 1fr)); gap: 10px; margin-top: 16px; }
+.tracker-admin-editor__form label { display: grid; min-width: 0; gap: 6px; color: #526b62; font-size: 12px; font-weight: 700; }
+.tracker-admin-editor__form input { box-sizing: border-box; width: 100%; min-width: 0; min-height: 43px; padding: 8px 10px; border: 1px solid #cadbd4; border-radius: 9px; background: #fff; font-size: 15px; }
+.tracker-admin-editor__form > button { min-height: 43px; padding: 8px 12px; border: 0; border-radius: 9px; background: #20805f; color: #fff; font-weight: 800; cursor: pointer; }
+.tracker-admin-editor__form > button.is-danger, .tracker-admin-row-actions button.is-danger { background: #fff1f0; color: #b42318; }
+.tracker-admin-row-actions { display: flex; gap: 5px; }
+.tracker-admin-row-actions button { padding: 6px 8px; border: 0; border-radius: 7px; background: #eaf6f1; color: #176548; font-size: 12px; font-weight: 700; cursor: pointer; }
 .tracker-admin-empty { display: grid; place-items: center; min-height: 50vh; text-align: center; }
 .tracker-admin-empty h2 { margin-bottom: 4px; }
 .tracker-admin-empty p { color: #71837c; }
@@ -65,6 +81,7 @@
   .tracker-admin-users nav { display: flex; overflow-x: auto; padding-bottom: 3px; }
   .tracker-admin-users nav button { min-width: 155px; }
   .tracker-admin-stats { grid-template-columns: repeat(2, 1fr); }
+  .tracker-admin-editor__form { grid-template-columns: repeat(2, 1fr); }
 }
 
 @media (max-width: 560px) {
@@ -80,4 +97,6 @@
   .tracker-admin-navigator { width: 100%; justify-content: space-between; }
   .tracker-admin-navigator label { min-width: 0; flex: 1; }
   .tracker-admin-chart { height: 310px; }
+  .tracker-admin-editor__heading { align-items: flex-start; }
+  .tracker-admin-editor__form { grid-template-columns: 1fr 1fr; }
 }

@@ -7,12 +7,10 @@ import "./trackerRoute.css";
 const RECORDS_KEY = "daily-tracker";
 const BACKUP_KEY = "daily-tracker-pre-server-backup";
 const IMPORTED_KEY = "daily-tracker-server-imported-v1";
-const RECONCILED_KEY = "daily-tracker-username-reconciled-v2";
 const ACTIVE_USERNAME_KEY = "glucose-tracker-active-username";
 const recordsKey = (username: string) => `${RECORDS_KEY}:${username}`;
 const backupKey = (username: string) => `${BACKUP_KEY}:${username}`;
 const importedKey = (username: string) => `${IMPORTED_KEY}:${username}`;
-const reconciledKey = (username: string) => `${RECONCILED_KEY}:${username}`;
 const dirtyKey = (username: string) => `daily-tracker-dirty-days:${username}`;
 
 const EMPTY_VALUES = (): DayRecord["values"] => ({
@@ -81,6 +79,19 @@ export const mergeRecords = (...sources: DayRecord[][]) => {
   return sortRecords(Array.from(merged.values()));
 };
 
+export const selectRecordsToUpload = (
+  serverRecords: DayRecord[],
+  localRecords: DayRecord[],
+  dirtyDays: string[],
+  includeMissingDays: boolean,
+) => {
+  const serverDays = new Set(serverRecords.map(record => record.day));
+  const dirty = new Set(dirtyDays);
+  return [...localRecords].reverse().filter(record =>
+    dirty.has(record.day) || (includeMissingDays && !serverDays.has(record.day))
+  );
+};
+
 const loadDirtyDays = (username: string): string[] => {
   try {
     const parsed = JSON.parse(localStorage.getItem(dirtyKey(username)) || "[]");
@@ -135,49 +146,44 @@ function GlucoseTracker() {
     });
   }, [username]);
 
+  const synchronizeAll = useCallback(async (includeLegacyData: boolean) => {
+    if (!username) return;
+    const activeDate = selectedDateRef.current;
+    const perUserRecords = loadLocalRecords(recordsKey(username));
+    const legacyRecords = includeLegacyData ? loadLocalRecords() : [];
+    const localRecords = mergeRecords(legacyRecords, perUserRecords);
+    if (includeLegacyData && !localStorage.getItem(backupKey(username))) {
+      localStorage.setItem(backupKey(username), JSON.stringify(localRecords));
+    }
+    setSyncState("syncing");
+    try {
+      let result = await syncTracker(username, [], false);
+      const recordsToUpload = selectRecordsToUpload(
+        result.records, localRecords, loadDirtyDays(username), includeLegacyData,
+      );
+      for (const record of recordsToUpload) {
+        result = await syncTracker(username, [record], false);
+      }
+      localStorage.setItem(recordsKey(username), JSON.stringify(result.records));
+      saveDirtyDays(username, []);
+      setRecords(sortRecords(result.records));
+      setSelectedTime(getAutomaticSlot(result.records, activeDate));
+      setSyncState("synced");
+    } catch {
+      setRecords(localRecords);
+      setSyncState("offline");
+    }
+  }, [username]);
+
   useEffect(() => {
     if (!username) return;
-    const legacyRecords = loadLocalRecords();
     const perUserRecords = loadLocalRecords(recordsKey(username));
-    const sorted = mergeRecords(legacyRecords, perUserRecords);
+    const sorted = sortRecords(perUserRecords);
     const activeDate = selectedDateRef.current;
     setRecords(sorted);
     setSelectedTime(getAutomaticSlot(sorted, activeDate));
-
-    const importSequentially = async () => {
-      const needsReconciliation = localStorage.getItem(reconciledKey(username)) !== "true";
-      if (needsReconciliation && !localStorage.getItem(backupKey(username))) {
-        localStorage.setItem(backupKey(username), JSON.stringify(sorted));
-      }
-      setSyncState("syncing");
-      try {
-        let result = await syncTracker(username, [], false);
-        const reconciled = mergeRecords(result.records, legacyRecords, perUserRecords);
-        const dirtyDays = new Set(loadDirtyDays(username));
-        const recordsToUpload = needsReconciliation
-          ? [...reconciled].reverse()
-          : [...reconciled].reverse().filter(record => dirtyDays.has(record.day));
-
-        for (let index = 0; index < recordsToUpload.length; index += 1) {
-          const isLastDay = index === recordsToUpload.length - 1;
-          result = await syncTracker(username, [recordsToUpload[index]], needsReconciliation && isLastDay);
-        }
-        if (needsReconciliation && recordsToUpload.length === 0) {
-          result = await syncTracker(username, [], true);
-        }
-        localStorage.setItem(recordsKey(username), JSON.stringify(result.records));
-        localStorage.setItem(reconciledKey(username), "true");
-        if (result.initial_import_completed) localStorage.setItem(importedKey(username), "true");
-        saveDirtyDays(username, []);
-        setRecords(sortRecords(result.records));
-        setSelectedTime(getAutomaticSlot(result.records, activeDate));
-        setSyncState("synced");
-      } catch {
-        setSyncState("offline");
-      }
-    };
-    void importSequentially();
-  }, [username]);
+    void synchronizeAll(false);
+  }, [username, synchronizeAll]);
 
   const selectUsername = () => {
     const normalized = normalizeUsername(usernameInput);
@@ -252,7 +258,7 @@ function GlucoseTracker() {
           <span className={`tracker-status tracker-status--${syncState}`}>
             {syncState === "syncing" ? "Համաժամեցվում է…" : syncState === "synced" ? "Պահված է սերվերում" : "Պահված է սարքում"}
           </span>
-          <button onClick={() => { localStorage.removeItem(ACTIVE_USERNAME_KEY); setUsername(null); setUsernameInput(""); }}>Փոխել օգտատիրոջը</button>
+          <button disabled={syncState === "syncing"} onClick={() => synchronizeAll(true)}>{syncState === "syncing" ? "Համաժամեցվում է…" : "Համաժամեցնել ամբողջը"}</button>
         </div>
       </header>
 
