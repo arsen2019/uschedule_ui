@@ -16,6 +16,14 @@ interface SyncResponse {
 
 export const normalizeUsername = (username: string) => username.trim().toLocaleLowerCase();
 
+// Mobile decimal keyboards use either a dot or a comma depending on locale.
+// Keep the value as text while it is being entered so intermediate values such
+// as "15." are not discarded by the browser's number-input parser.
+export const normalizeGlucoseInput = (value: string): string | null => {
+  const normalized = value.replace(/[,\u066b]/g, ".");
+  return /^\d*(?:\.\d*)?$/.test(normalized) ? normalized : null;
+};
+
 export const syncTracker = async (
   username: string,
   records: DayRecord[],

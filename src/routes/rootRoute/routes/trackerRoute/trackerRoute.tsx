@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createRoute } from "@tanstack/react-router";
 import { rootRoute } from "../../rootRoute";
-import { DayRecord, normalizeUsername, syncTracker, TIME_SLOTS, TimeSlot } from "./trackerApi";
+import { DayRecord, normalizeGlucoseInput, normalizeUsername, syncTracker, TIME_SLOTS, TimeSlot } from "./trackerApi";
 import "./trackerRoute.css";
 
 const RECORDS_KEY = "daily-tracker";
@@ -281,7 +281,7 @@ function GlucoseTracker() {
         </fieldset>
 
         <label className="tracker-field tracker-field--value">Գլյուկոզա (mmol/L)
-          <input aria-label="Գլյուկոզա" type="number" min="0.1" step="0.1" inputMode="decimal" placeholder="օր.՝ 6.2" value={value} onChange={e => setValue(e.target.value)} onKeyDown={e => e.key === "Enter" && save()}/>
+          <input aria-label="Գլյուկոզա" type="text" inputMode="decimal" enterKeyHint="done" autoComplete="off" pattern="[0-9]*[.,]?[0-9]*" placeholder="օր.՝ 6.2" value={value} onChange={e => { const next = normalizeGlucoseInput(e.target.value); if (next !== null) setValue(next); }} onKeyDown={e => e.key === "Enter" && save()}/>
         </label>
         <button className="tracker-save" onClick={save}>Գրանցել չափումը</button>
       </section>

@@ -1,5 +1,5 @@
 import { getAutomaticSlot, mergeRecords, selectRecordsToUpload } from "./trackerRoute";
-import { DayRecord } from "./trackerApi";
+import { DayRecord, normalizeGlucoseInput } from "./trackerApi";
 
 const record = (values: DayRecord["values"]): DayRecord => ({ day: "2026-07-21", values });
 const nowAt = (hour: number) => new Date(2026, 6, 21, hour, 0, 0);
@@ -55,5 +55,21 @@ describe("mergeRecords", () => {
   test("dirty offline edits are uploaded even when the server day exists", () => {
     const server = [record({ "09:00": 6.1, "14:00": null, "19:00": null, "22:00": null })];
     expect(selectRecordsToUpload(server, server, ["2026-07-21"], false)).toHaveLength(1);
+  });
+});
+
+describe("normalizeGlucoseInput", () => {
+  test("accepts decimal points and preserves an unfinished decimal", () => {
+    expect(normalizeGlucoseInput("15.6")).toBe("15.6");
+    expect(normalizeGlucoseInput("15.")).toBe("15.");
+  });
+
+  test("normalizes mobile decimal commas", () => {
+    expect(normalizeGlucoseInput("18,1")).toBe("18.1");
+  });
+
+  test("rejects non-numeric and multiple-decimal input", () => {
+    expect(normalizeGlucoseInput("18..1")).toBeNull();
+    expect(normalizeGlucoseInput("abc")).toBeNull();
   });
 });

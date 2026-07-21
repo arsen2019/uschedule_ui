@@ -4,7 +4,7 @@ import {
   Area, CartesianGrid, ComposedChart, Line, ResponsiveContainer, Tooltip, XAxis, YAxis,
 } from "recharts";
 import { rootRoute } from "../../rootRoute";
-import { DayRecord, TIME_SLOTS } from "../trackerRoute/trackerApi";
+import { DayRecord, normalizeGlucoseInput, TIME_SLOTS } from "../trackerRoute/trackerApi";
 import { adminErrorMessage, AdminTrackerUser, deleteAdminRecord, getAdminRecords, getAdminUsers, patchAdminRecord } from "./trackerAdminApi";
 import {
   aggregateRecords, formatIsoDate, getCalendarRange, moveCalendarRange, parseIsoDate,
@@ -227,7 +227,7 @@ function TrackerAdminDashboard() {
             <div className="tracker-admin-editor__heading"><div><h3>Add or correct a record</h3><span>Leave a measurement blank to clear that slot.</span></div><button onClick={() => editRecord()}>New date</button></div>
             <div className="tracker-admin-editor__form">
               <label>Date<input type="date" value={editDate} onChange={event => setEditDate(event.target.value)} /></label>
-              {TIME_SLOTS.map(slot => <label key={slot}>{slot}<input type="number" min="0.1" step="0.1" inputMode="decimal" placeholder="—" value={editValues[slot]} onChange={event => setEditValues(current => ({ ...current, [slot]: event.target.value }))} /></label>)}
+              {TIME_SLOTS.map(slot => <label key={slot}>{slot}<input type="text" inputMode="decimal" enterKeyHint="next" autoComplete="off" pattern="[0-9]*[.,]?[0-9]*" placeholder="—" value={editValues[slot]} onChange={event => { const next = normalizeGlucoseInput(event.target.value); if (next !== null) setEditValues(current => ({ ...current, [slot]: next })); }} /></label>)}
               <button disabled={savingRecord} onClick={saveEditedRecord}>{savingRecord ? "Saving…" : "Save record"}</button>
               {records.some(record => record.day === editDate) && <button className="is-danger" disabled={savingRecord} onClick={() => removeRecord(editDate)}>Delete day</button>}
             </div>
